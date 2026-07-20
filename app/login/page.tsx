@@ -1,4 +1,50 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
+
 export default function Login() {
+  const router = useRouter();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleLogin(
+    e: React.FormEvent<HTMLFormElement>
+  ) {
+    e.preventDefault();
+
+    setError("");
+
+    if (!email || !password) {
+      setError("Please fill in all fields.");
+      return;
+    }
+
+    setLoading(true);
+
+    const supabase = createClient();
+
+const { error } = await supabase.auth.signInWithPassword({
+  email,
+  password,
+});
+    setLoading(false);
+
+    if (error) {
+      setError(error.message);
+      return;
+    }
+
+    alert("Login successful!");
+
+    router.push("/admin/orders");
+  }
+
   return (
     <main className="min-h-screen bg-sky-50 flex items-center justify-center px-6">
 
@@ -12,8 +58,16 @@ export default function Login() {
           Login to your ProxySocials account
         </p>
 
+        {error && (
+          <div className="mt-4 rounded-lg bg-red-100 p-3 text-red-700">
+            {error}
+          </div>
+        )}
 
-        <form className="mt-8 space-y-5">
+        <form
+          onSubmit={handleLogin}
+          className="mt-8 space-y-5"
+        >
 
           <div>
             <label className="block text-gray-700 font-semibold mb-2">
@@ -23,6 +77,8 @@ export default function Login() {
             <input
               type="email"
               placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:border-sky-600"
             />
           </div>
@@ -36,6 +92,8 @@ export default function Login() {
             <input
               type="password"
               placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:border-sky-600"
             />
           </div>
@@ -43,9 +101,10 @@ export default function Login() {
 
           <button
             type="submit"
-            className="w-full bg-sky-600 text-white py-3 rounded-xl font-bold hover:bg-sky-700 transition"
+            disabled={loading}
+            className="w-full bg-sky-600 text-white py-3 rounded-xl font-bold hover:bg-sky-700 transition disabled:opacity-50"
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
 
         </form>
@@ -60,7 +119,6 @@ export default function Login() {
             Sign Up
           </a>
         </p>
-
 
       </div>
 

@@ -16,9 +16,82 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  async function handleSignup(
+    e: React.FormEvent<HTMLFormElement>
+  ) {
+    e.preventDefault();
+
+    setError("");
+
+    if (
+      !fullName ||
+      !email ||
+      !phone ||
+      !password ||
+      !confirmPassword
+    ) {
+      setError("Please fill in all fields.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setLoading(true);
+
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+          phone,
+        },
+      },
+    });
+
+    if (error) {
+      setError(error.message);
+      setLoading(false);
+      return;
+    }
+
+    const user = data.user;
+
+    if (user) {
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .insert({
+          id: user.id,
+          full_name: fullName,
+          phone,
+          referral_code: `PROXY${Math.floor(
+            Math.random() * 100000
+          )}`,
+          wallet_balance: 0,
+        });
+
+      if (profileError) {
+        setError(profileError.message);
+        setLoading(false);
+        return;
+      }
+    }
+
+    setLoading(false);
+
+    alert("Account created successfully!");
+
+    router.push("/login");
+  }
+
   return (
     <main className="min-h-screen bg-sky-50 flex items-center justify-center px-6">
+
       <div className="bg-white w-full max-w-md p-8 rounded-2xl shadow-lg">
+
         <h1 className="text-3xl font-extrabold text-sky-700 text-center">
           Create Account
         </h1>
@@ -33,7 +106,11 @@ export default function Signup() {
           </div>
         )}
 
-        <form className="mt-8 space-y-5">
+        <form
+          onSubmit={handleSignup}
+          className="mt-8 space-y-5"
+        >
+
           <div>
             <label className="block text-gray-700 font-semibold mb-2">
               Full Name
@@ -47,6 +124,7 @@ export default function Signup() {
               className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:border-sky-600"
             />
           </div>
+
 
           <div>
             <label className="block text-gray-700 font-semibold mb-2">
@@ -62,6 +140,7 @@ export default function Signup() {
             />
           </div>
 
+
           <div>
             <label className="block text-gray-700 font-semibold mb-2">
               Phone Number
@@ -76,6 +155,7 @@ export default function Signup() {
             />
           </div>
 
+
           <div>
             <label className="block text-gray-700 font-semibold mb-2">
               Password
@@ -83,12 +163,12 @@ export default function Signup() {
 
             <input
               type="password"
-              placeholder="Create a password"
-              value={password}
+              placeholder="Create a password"value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:border-sky-600"
             />
           </div>
+
 
           <div>
             <label className="block text-gray-700 font-semibold mb-2">
@@ -104,6 +184,7 @@ export default function Signup() {
             />
           </div>
 
+
           <button
             type="submit"
             disabled={loading}
@@ -111,7 +192,9 @@ export default function Signup() {
           >
             {loading ? "Creating Account..." : "Create Account"}
           </button>
+
         </form>
+
 
         <p className="text-center text-gray-600 mt-6">
           Already have an account?{" "}
@@ -119,7 +202,9 @@ export default function Signup() {
             Login
           </a>
         </p>
+
       </div>
+
     </main>
   );
 }
