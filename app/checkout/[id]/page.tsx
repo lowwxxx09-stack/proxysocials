@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/utils/supabase/client";
 
 type Service = {
   id: string;
@@ -35,22 +35,51 @@ export default function CheckoutPage() {
     });
 
   const [loading, setLoading] = useState(true);
-const [receipt, setReceipt] = useState<File | null>(null);
-
+const [userId, setUserId] = useState("");
 const [note, setNote] = useState("");
+
+
+
 
 const [submitting, setSubmitting] = useState(false);
 const [customerName, setCustomerName] = useState("");
 const [whatsappNumber, setWhatsappNumber] = useState("");
 const [email, setEmail] = useState("");
-
+const [quantity, setQuantity] = useState("");
+const [accountLink, setAccountLink] = useState("");
+const [customDetails, setCustomDetails] = useState("");
 
   useEffect(() => {
     getCheckoutData();
   }, []);
 
   async function getCheckoutData() {
-    const { data: serviceData } = await supabase
+    
+    const supabase = createClient();
+    
+    const {
+  data: { user },
+} = await supabase.auth.getUser();
+
+if (!user) {
+  window.location.href = "/login";
+  return;
+}
+
+setUserId(user.id);
+const { data: profile } = await supabase
+  .from("profiles")
+  .select("full_name, phone")
+  .eq("id", user.id)
+  .single();
+
+if (profile) {
+  setCustomerName(profile.full_name);
+  setWhatsappNumber(profile.phone);
+}
+
+setEmail(user.email ?? "");    
+const { data: serviceData } = await supabase
       .from("services")
       .select("*")
       .eq("id", id)
@@ -78,59 +107,50 @@ console.log("PAYMENT ERROR:", paymentError);
 
     setLoading(false);
   }
-async function submitOrder() {
-  if (!receipt) {
-    alert("Please upload your payment receipt.");
-    return;
-  }
 
+  
+async function submitOrder() {
   setSubmitting(true);
 
   try {
-    const fileName = Date.now() + "-" + receipt.name;
+    const response = await fetch("/api/paystack/initialize", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        amount: (service?.price ?? 0) * 100,
+        customerName,
+        whatsappNumber,
+        serviceId: service?.id,
+        note,
+        userId,
 
-    const { data, error: uploadError } = await supabase.storage
-  .from("payment_receipts")
-  .upload(fileName, receipt, {
-    upsert: false,
-  });
+        orderContent: {
+          quantity,
+          accountLink,
+          customDetails,
+        },
+      }),
+    });
 
-console.log("Upload result:", data, uploadError);
-    if (uploadError) {
-      throw uploadError;
+    const data = await response.json();
+
+    if (!data.status) {
+      throw new Error(data.message);
     }
 
-    const { data: fileData } = supabase.storage
-  .from("payment_receipts")
-  .getPublicUrl(fileName);
-    const receiptUrl = fileData.publicUrl;
-
-    const { error: orderError } = await supabase
-  .from("order")
-  .insert({
-    service_id: service?.id,
-    amount: service?.price,
-    order_status: "pending_verification",
-    receipt_url: receiptUrl,
-    note: note,
-    customer_name: customerName,
-    whatsapp_number: whatsappNumber,
-    email: email,
-  });
-
-    if (orderError) {
-      throw orderError;
-    }
-
-    alert("Order submitted successfully!");
-
-  }  catch (error: any) {
-  console.log(error);
-  alert(error.message || JSON.stringify(error));
+    window.location.href = data.data.authorization_url;
+  } catch (error: any) {
+    console.error(error);
+    alert(error.message || "Unable to initialize payment.");
+  } finally {
+    setSubmitting(false);
+  }
 }
+    
 
-  setSubmitting(false);
-}
   if (loading) {
     return (
       <main className="min-h-screen bg-sky-50 flex items-center justify-center">
@@ -252,23 +272,50 @@ console.log("Upload result:", data, uploadError);
 </div>
 <div className="mt-6">
 
+  
+  
+
+</div>
+<div className="mt-5">
   <label className="block font-semibold mb-2">
-    Upload Payment Receipt
+    Quantity
   </label>
 
   <input
-    type="file"
-    accept="image/*,.pdf"
-    onChange={(e) => {
-      if (e.target.files?.[0]) {
-        setReceipt(e.target.files[0]);
-      }
-    }}
+    type="text"
+    value={quantity}
+    onChange={(e) => setQuantity(e.target.value)}
+    placeholder="e.g. 1000 Followers"
     className="w-full border rounded-lg p-3"
   />
-
 </div>
 
+<div className="mt-5">
+  <label className="block font-semibold mb-2">
+    Account / Link
+  </label>
+
+  <input
+    type="text"
+    value={accountLink}
+    onChange={(e) => setAccountLink(e.target.value)}
+    placeholder="Paste your account or post link"
+    className="w-full border rounded-lg p-3"
+  />
+</div>
+
+<div className="mt-5">
+  <label className="block font-semibold mb-2">
+    Extra Details
+  </label>
+
+  <textarea
+    value={customDetails}
+    onChange={(e) => setCustomDetails(e.target.value)}
+    placeholder="Any additional instructions..."
+    className="w-full border rounded-lg p-3 h-28"
+  />
+</div>
 <div className="mt-5">
 
   <label className="block font-semibold mb-2">
@@ -289,13 +336,9 @@ console.log("Upload result:", data, uploadError);
   disabled={submitting}
   className="mt-8 w-full bg-sky-600 hover:bg-sky-700 disabled:bg-gray-400 text-white py-3 rounded-xl font-bold transition"
 >
-  {submitting ? "Submitting..." : "I've Made Payment"}
+  {submitting ? "Redirecting to Paystack..." : "Pay Now"}
 </button>
-        <button
-          className="mt-8 w-full bg-sky-600 hover:bg-sky-700 text-white py-3 rounded-xl font-bold transition"
-        >
-          Continue to Payment
-        </button>
+        
 
       </div>
     </main>

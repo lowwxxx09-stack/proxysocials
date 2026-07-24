@@ -4,7 +4,16 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    const { email, amount } = body;
+    const {
+      email,
+      amount,
+      customerName,
+      whatsappNumber,
+      serviceId,
+      note,
+      userId,
+      orderContent,
+    } = body;
 
     if (!email || !amount) {
       return NextResponse.json(
@@ -15,19 +24,43 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-
+console.log("METADATA BEING SENT:");
+console.log({
+  customerName,
+  whatsappNumber,
+  serviceId,
+  note,
+  email,
+  amount,
+  userId,
+  orderContent,
+});
     const response = await fetch(
       "https://api.paystack.co/transaction/initialize",
       {
         method: "POST",
         headers: {
-          Authorization: "Bearer " + process.env.PAYSTACK_SECRET_KEY,
+          Authorization:
+            "Bearer " + process.env.PAYSTACK_SECRET_KEY,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           email,
           amount,
           currency: "NGN",
+          callback_url:
+            "http://localhost:3000/payment/callback",
+
+          metadata: {
+            customerName,
+            whatsappNumber,
+            serviceId,
+            note,
+            email,
+            amount,
+            userId,
+            orderContent: JSON.stringify(orderContent),
+          },
         }),
       }
     );

@@ -40,9 +40,7 @@ const { error } = await supabase.auth.signInWithPassword({
       return;
     }
 
-    alert("Login successful!");
-
-    router.push("/admin/orders");
+    router.replace("/dashboard");
   }
 
   return (

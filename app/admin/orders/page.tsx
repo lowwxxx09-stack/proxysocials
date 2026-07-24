@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import OrderActions from "@/components/OrderActions";
+import OrdersTable from "@/components/OrdersTable";
 
 export default async function OrdersPage() {
   const { data: orders, error } = await supabase
@@ -14,74 +14,124 @@ export default async function OrdersPage() {
     `
     )
     .order("created_at", { ascending: false });
+const totalOrders = orders?.length || 0;
 
+const pendingOrders =
+  orders?.filter(
+    (order: any) => order.order_status === "pending_verification"
+  ).length || 0;
+
+const completedOrders =
+  orders?.filter(
+    (order: any) => order.order_status === "completed"
+  ).length || 0;
+
+const rejectedOrders =
+  orders?.filter(
+    (order: any) => order.order_status === "rejected"
+  ).length || 0;
+  const totalRevenue =
+  orders
+    ?.filter(
+      (order: any) =>
+        order.order_status === "completed"
+    )
+    .reduce(
+      (sum: number, order: any) =>
+        sum + Number(order.amount || 0),
+      0
+    ) || 0;
   if (error) {
-    return <div>Error loading orders</div>;
+    return (
+      <main className="min-h-screen flex items-center justify-center">
+        <h1 className="text-red-600 text-xl font-bold">
+          Error loading orders
+        </h1>
+      </main>
+    );
   }
 
   return (
-    <main className="max-w-5xl mx-auto p-8">
-      <h1 className="text-3xl font-bold mb-8">
-        ProxySocials Orders
-      </h1>
+    <main className="min-h-screen bg-sky-50 p-8">
 
-      {orders?.map((order) => (
-        <div
-          key={order.id}
-          className="bg-white border rounded-xl shadow-sm p-6 mb-6"
-        >
-          <h2 className="text-xl font-bold mb-2">
-            {order.services?.title}
-          </h2>
+      <div className="max-w-6xl mx-auto">
 
-          <p className="text-gray-600 mb-4">
-            {order.services?.category}
-          </p>
+        <h1 className="text-4xl font-extrabold text-sky-700 mb-2">
+          Orders Dashboard
+        </h1>
 
-          <div className="space-y-2">
-  <p>
-    <strong>Customer:</strong> {order.customer_name || "Not provided"}
+        <p className="text-gray-600 mb-8">
+          Manage customer orders and payment receipts.
+        </p>
+<div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-10">
+
+  <div className="bg-white rounded-2xl shadow-md p-6">
+    <p className="text-gray-500 text-sm">
+      Total Orders
+    </p>
+
+    <h2 className="text-4xl font-extrabold text-sky-700 mt-2">
+      {totalOrders}
+    </h2>
+  </div>
+
+  <div className="bg-yellow-50 rounded-2xl shadow-md p-6">
+    <p className="text-yellow-700 text-sm">
+      Pending
+    </p>
+
+    <h2 className="text-4xl font-extrabold text-yellow-600 mt-2">
+      {pendingOrders}
+    </h2>
+  </div>
+
+  <div className="bg-green-50 rounded-2xl shadow-md p-6">
+    <p className="text-green-700 text-sm">
+      Completed
+    </p>
+
+    <h2 className="text-4xl font-extrabold text-green-600 mt-2">
+      {completedOrders}
+    </h2>
+  </div>
+
+  <div className="bg-red-50 rounded-2xl shadow-md p-6">
+    <div className="bg-sky-100 rounded-2xl shadow-md p-6">
+
+  <p className="text-sky-700 text-sm">
+    Revenue
   </p>
 
-  <p>
-    <strong>WhatsApp:</strong> {order.whatsapp_number || "Not provided"}
-  </p>
+  <h2 className="text-3xl font-extrabold text-sky-800 mt-2">
+    ₦{totalRevenue.toLocaleString()}
+  </h2>
 
-  <p>
-    <strong>Email:</strong> {order.email || "Not provided"}
-  </p>
-
-  <p>
-    <strong>Order ID:</strong> {order.id}
-  </p>
-
-  <p>
-    <strong>Amount:</strong> ₦{order.amount}
-  </p>
-
-  <p>
-    <strong>Status:</strong> {order.order_status}
-  </p>
-
-  <p>
-    <strong>Note:</strong> {order.note || "No note"}
-  </p>
 </div>
+    <p className="text-red-700 text-sm">
+      Rejected
+    </p>
 
-          <div className="mt-4">
-            <a
-              href={order.receipt_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sky-600 hover:text-sky-700 underline font-medium"
-            >
-              View Payment Receipt
-            </a>
-          </div>
+    <h2 className="text-4xl font-extrabold text-red-600 mt-2">
+      {rejectedOrders}
+    </h2>
+  </div>
 
-          <OrderActions id={order.id} />
-        </div>
-      ))}
+</div>
+        {orders?.length === 0 ? (
+
+  <div className="bg-white rounded-xl p-8 text-center shadow">
+    No orders yet.
+  </div>
+
+) : (
+
+  <OrdersTable orders={orders} />
+
+)}
+          
+
+      </div>
+
     </main>
   );
 }
