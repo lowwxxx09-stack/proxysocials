@@ -18,7 +18,7 @@ const totalOrders = orders?.length || 0;
 
 const pendingOrders =
   orders?.filter(
-    (order: any) => order.order_status === "pending_verification"
+    (order: any) => order.order_status === "pending"
   ).length || 0;
 
 const completedOrders =
@@ -102,9 +102,9 @@ const rejectedOrders =
     Revenue
   </p>
 
-  <h2 className="text-3xl font-extrabold text-sky-800 mt-2">
-    ₦{totalRevenue.toLocaleString()}
-  </h2>
+  <h2 className="text-2xl md:text-3xl font-extrabold text-sky-800 mt-2 break-words">
+  ₦{totalRevenue.toLocaleString()}
+</h2>
 
 </div>
     <p className="text-red-700 text-sm">

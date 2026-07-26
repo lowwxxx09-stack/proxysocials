@@ -10,18 +10,23 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const {
-  service_id,
-  stock_data,
-} = body;
+    const stockRows = body.stockRows;
+
+    if (!stockRows || !Array.isArray(stockRows)) {
+      return NextResponse.json(
+        {
+          status: false,
+          message: "No stock data received.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
 
     const { error } = await supabase
-  .from("stock")
-  .insert({
-    service_id,
-    stock_data,
-    is_used: false,
-  });
+      .from("stock")
+      .insert(stockRows);
 
     if (error) {
       console.error(error);
@@ -31,14 +36,19 @@ export async function POST(request: NextRequest) {
           status: false,
           message: error.message,
         },
-        { status: 500 }
+        {
+          status: 500,
+        }
       );
     }
 
-    return NextResponse.json({
-      status: true,
-      message: "Stock saved successfully.",
-    });
+    return NextResponse.json(
+      {
+        status: true,
+        message: "Stock uploaded successfully.",
+      }
+    );
+
   } catch (error) {
     console.error(error);
 
@@ -47,7 +57,9 @@ export async function POST(request: NextRequest) {
         status: false,
         message: "Something went wrong.",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }

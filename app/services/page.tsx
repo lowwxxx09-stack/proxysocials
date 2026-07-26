@@ -29,10 +29,7 @@ export default function ServicesPage() {
     const { data, error } = await supabase
       .from("services")
       .select("*")
-      .limit(10);
-
-    console.log("SUPABASE DATA:", data);
-    console.log("SUPABASE ERROR:", error);
+      .limit(30);
 
     if (error) {
       setErrorMessage(error.message);
@@ -44,14 +41,14 @@ export default function ServicesPage() {
     setLoading(false);
   }
 
-  function orderService(serviceId: string) {
-    router.push("/checkout/" + serviceId);
+  function orderService(id: string) {
+    router.push("/checkout/" + id);
   }
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-sky-50 flex items-center justify-center">
-        <h1 className="text-xl font-bold text-sky-700">
+      <main className="min-h-screen flex items-center justify-center bg-sky-50">
+        <h1 className="text-2xl font-bold text-sky-700">
           Loading Services...
         </h1>
       </main>
@@ -59,79 +56,106 @@ export default function ServicesPage() {
   }
 
   return (
-    <main className="min-h-screen bg-sky-50 px-6 py-10">
+    <main className="min-h-screen bg-gradient-to-b from-sky-50 to-white py-14 px-6">
 
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto">
 
-        <div className="text-center mb-10">
+        <div className="text-center mb-14">
 
-          <h1 className="text-4xl font-extrabold text-sky-700">
+          <h1 className="text-5xl font-black text-sky-700">
             ProxySocials Marketplace
           </h1>
 
-          <p className="mt-3 text-gray-600">
-            Choose a service and grow your digital presence.
+          <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+            Buy verified social media services, subscriptions,
+            gift cards and digital products instantly.
           </p>
 
         </div>
 
         {errorMessage && (
-          <div className="bg-red-100 text-red-700 p-4 rounded-xl mb-6">
+          <div className="bg-red-100 text-red-700 p-5 rounded-2xl mb-8 text-center">
             {errorMessage}
           </div>
         )}
 
-        {services.length === 0 && !errorMessage && (
-          <div className="bg-white p-6 rounded-xl text-center text-gray-600">
-            No services available yet.
+        {!errorMessage && services.length === 0 && (
+          <div className="bg-white rounded-3xl shadow-lg p-10 text-center">
+            <h2 className="text-2xl font-bold text-gray-700">
+              No Services Available
+            </h2>
+
+            <p className="text-gray-500 mt-3">
+              Services will appear here once they are added.
+            </p>
           </div>
         )}
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
 
           {services.map((service) => (
 
             <div
               key={service.id}
-              className="bg-white rounded-2xl shadow-sm overflow-hidden"
+              className="bg-white rounded-3xl overflow-hidden border border-sky-100 shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
             >
 
-              {service.image && (
+              {service.image ? (
                 <img
                   src={service.image}
                   alt={service.title}
-                  className="w-full h-52 object-cover"
+                  className="w-full h-60 object-cover"
                 />
+              ) : (
+                <div className="w-full h-60 bg-sky-100 flex items-center justify-center text-sky-600 font-bold text-xl">
+                  ProxySocials
+                </div>
               )}
 
-              <div className="p-6">
+              <div className="p-7">
 
-                <p className="text-sky-600 font-bold text-sm">
+                <span className="inline-block bg-sky-100 text-sky-700 text-xs font-bold uppercase tracking-wide px-4 py-1 rounded-full">
                   {service.category}
-                </p>
+                </span>
 
-                <h2 className="text-2xl font-extrabold mt-2">
+                <h2 className="mt-5 text-2xl font-black text-gray-900">
                   {service.title}
                 </h2>
 
-                <p className="text-gray-600 mt-3">
+                <p className="mt-4 text-gray-600 leading-7">
                   {service.description}
                 </p>
 
-                <p className="mt-4 text-gray-700">
-                  Delivery:
-                  <span className="font-bold ml-2">
-                    {service.delivery_time}
-                  </span>
-                </p>
+                <div className="mt-6 flex items-center justify-between">
 
-                <p className="mt-3 text-xl font-extrabold text-sky-700">
-                  ₦{service.price}
-                </p>
+                  <div>
+
+                    <p className="text-sm text-gray-500">
+                      Delivery Time
+                    </p>
+
+                    <p className="font-semibold text-gray-800">
+                      {service.delivery_time}
+                    </p>
+
+                  </div>
+
+                  <div className="text-right">
+
+                    <p className="text-sm text-gray-500">
+                      Price
+                    </p>
+                    <p className="text-3xl font-black text-sky-700">
+                      ₦{Number(service.price).toLocaleString()}
+                    </p>
+
+                  </div>
+
+                </div>
 
                 <button
                   onClick={() => orderService(service.id)}
-                  className="mt-6 w-full bg-sky-600 text-white py-3 rounded-xl font-bold hover:bg-sky-700"
+                  className="mt-8 w-full rounded-2xl bg-sky-600 hover:bg-sky-700 text-white py-3 font-bold shadow-md hover:shadow-xl transition-all"
                 >
                   Order Now
                 </button>

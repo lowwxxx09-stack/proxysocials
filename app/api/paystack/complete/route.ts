@@ -53,13 +53,25 @@ export async function POST(request: NextRequest) {
 
   const metadata = verifyData.data.metadata;
 const orderContent = JSON.parse(metadata.orderContent);
+const { data: existingOrder } = await supabase
+  .from("order")
+  .select("id")
+  .eq("payment_reference", reference)
+  .maybeSingle();
 
+if (existingOrder) {
+  return NextResponse.json({
+    status: true,
+    message: "Payment already processed.",
+  });
+}
 console.log("ORDER CONTENT:", orderContent);
 const { data: stock, error: stockError } = await supabase
   .from("stock")
   .select("*")
   .eq("service_id", metadata.serviceId)
   .eq("is_used", false)
+  .eq("status", "available")
   .limit(1)
   .single();
 
@@ -74,6 +86,8 @@ if (stockError || !stock) {
     }
   );
 }
+
+console.log("SELECTED STOCK:", stock);
   const { error } = await supabase
     .from("order")
     .insert({
@@ -86,10 +100,16 @@ if (stockError || !stock) {
       payment_reference: reference,
       payment_status: "paid",
       payment_method: "paystack",
-      order_status: "pending",
+      order_status: "completed",
       note: metadata.note,
       order_content: orderContent,
-      delivered_stock: stock.stock_data,
+      delivered_stock: {
+  username: stock.username,
+  password: stock.password,
+  email: stock.email,
+  recovery_email: stock.recovery_email,
+  twofa: stock.twofa,
+},
     });
 
   if (error) {
@@ -110,6 +130,7 @@ const { error: updateError } = await supabase
   .from("stock")
   .update({
     is_used: true,
+    status: "used",
   })
   .eq("id", stock.id);
 

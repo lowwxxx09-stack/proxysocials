@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import RevenueChart from "@/components/RevenueChart";
 import LogoutButton from "@/components/LogoutButton";
 export default async function AdminDashboard() {
+  const supabase = await createClient();
   const {
   data: { user },
 } = await supabase.auth.getUser();
@@ -28,7 +30,7 @@ if (!profile?.is_admin) {
 const pendingOrders =
   orders?.filter(
     (order: any) =>
-      order.order_status === "pending_verification"
+      order.order_status === "pending"
   ).length || 0;
 
 const completedOrders =
@@ -54,6 +56,70 @@ const totalRevenue =
         sum + Number(order.amount || 0),
       0
     ) || 0;
+    const today = new Date();
+
+const revenueToday =
+  orders
+    ?.filter((order: any) => {
+      const created = new Date(order.created_at);
+
+      return (
+        order.order_status === "completed" &&
+        created.toDateString() === today.toDateString()
+      );
+    })
+    .reduce(
+      (sum: number, order: any) =>
+        sum + Number(order.amount || 0),
+      0
+    ) || 0;
+
+const revenueThisWeek =
+  orders
+    ?.filter((order: any) => {
+      const created = new Date(order.created_at);
+
+      return (
+        order.order_status === "completed" &&
+        today.getTime() - created.getTime() <=
+          7 * 24 * 60 * 60 * 1000
+      );
+    })
+    .reduce(
+      (sum: number, order: any) =>
+        sum + Number(order.amount || 0),
+      0
+    ) || 0;
+    const revenueLast7Days = Array.from({ length: 7 }, (_, i) => {
+  const day = new Date();
+
+  day.setDate(day.getDate() - (6 - i));
+
+  const label = day.toLocaleDateString("en-US", {
+    weekday: "short",
+  });
+
+  const revenue =
+    orders
+      ?.filter((order: any) => {
+        const created = new Date(order.created_at);
+
+        return (
+          order.order_status === "completed" &&
+          created.toDateString() === day.toDateString()
+        );
+      })
+      .reduce(
+        (sum: number, order: any) =>
+          sum + Number(order.amount || 0),
+        0
+      ) || 0;
+
+  return {
+    day: label,
+    revenue,
+  };
+});
   return (
     <main className="min-h-screen bg-sky-50 p-8">
 
@@ -107,7 +173,29 @@ const totalRevenue =
   </div>
 
 </div>
+<div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-12">
 
+  <div className="bg-emerald-50 rounded-2xl shadow-md p-6">
+    <p className="text-emerald-700 text-sm">
+      Revenue Today
+    </p>
+
+    <h2 className="text-3xl font-extrabold text-emerald-800 mt-2">
+      ₦{revenueToday.toLocaleString()}
+    </h2>
+  </div>
+
+  <div className="bg-indigo-50 rounded-2xl shadow-md p-6">
+    <p className="text-indigo-700 text-sm">
+      Revenue This Week
+    </p>
+
+    <h2 className="text-3xl font-extrabold text-indigo-800 mt-2">
+      ₦{revenueThisWeek.toLocaleString()}
+    </h2>
+  </div>
+
+</div>
         <div className="grid md:grid-cols-3 gap-6 mt-10">
 
 
@@ -171,7 +259,9 @@ const totalRevenue =
             </Link>
 
           </div>
-
+<div className="mt-10">
+  <RevenueChart data={revenueLast7Days} />
+</div>
 
         </div>
 

@@ -49,10 +49,9 @@ export default function DeleteServiceButton({
 
   return (
     <button
-      onClick={handleDelete}
-      className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
-    >
-      Delete
-    </button>
+  className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 text-sm rounded-lg"
+>
+  Delete
+</button>
   );
 }
