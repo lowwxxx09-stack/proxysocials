@@ -3,12 +3,16 @@
 import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 export default function CustomerMenu() {
   const [open, setOpen] = useState(false);
+  function closeMenu() {
+  setOpen(false);
+}
 
   const router = useRouter();
+  const pathname = usePathname();
   const supabase = createClient();
 
   async function logout() {
@@ -49,32 +53,76 @@ export default function CustomerMenu() {
           <div className="space-y-5">
 
             <Link
-              href="/dashboard"
-              className="block font-bold text-lg hover:text-sky-400"
-            >
-              🏠 Dashboard
-            </Link>
+  href="/dashboard"
+  onClick={closeMenu}
+  className={`block font-bold text-lg transition ${
+    pathname === "/dashboard"
+      ? "text-sky-400"
+      : "hover:text-sky-400"
+  }`}
+>
+  🏠 Dashboard
+</Link>
 
             <Link
-              href="/services"
-              className="block font-bold text-lg hover:text-sky-400"
-            >
-              🛒 Services
-            </Link>
+  href="/services"
+  onClick={closeMenu}
+  className={`block font-bold text-lg transition ${
+    pathname === "/services"
+      ? "text-sky-400"
+      : "hover:text-sky-400"
+  }`}
+>
+  🛒 Services
+</Link>
 
             <Link
-              href="/order-history"
-              className="block font-bold text-lg hover:text-sky-400"
-            >
-              📦 Order History
-            </Link>
+  href="/order-history"
+  onClick={closeMenu}
+  className={`block font-bold text-lg transition ${
+    pathname === "/order-history"
+      ? "text-sky-400"
+      : "hover:text-sky-400"
+  }`}
+>
+  📦 Order History
+</Link>
 
             <Link
-              href="/profile"
-              className="block font-bold text-lg hover:text-sky-400"
-            >
-              👤 My Profile
-            </Link>
+  href="/profile"
+  onClick={closeMenu}
+  className={`block font-bold text-lg transition ${
+    pathname === "/profile"
+      ? "text-sky-400"
+      : "hover:text-sky-400"
+  }`}
+>
+  👤 My Profile
+</Link>
+
+<Link
+  href="/support"
+  onClick={closeMenu}
+  className={`block font-bold text-lg transition ${
+    pathname === "/support"
+      ? "text-sky-400"
+      : "hover:text-sky-400"
+  }`}
+>
+  💬 Contact Support
+</Link>
+
+<Link
+  href="/disclaimer"
+  onClick={closeMenu}
+  className={`block font-bold text-lg transition ${
+    pathname === "/disclaimer"
+      ? "text-sky-400"
+      : "hover:text-sky-400"
+  }`}
+>
+  ⚠ Disclaimer
+</Link>
 
             <button
               onClick={logout}

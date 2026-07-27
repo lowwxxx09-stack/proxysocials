@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import CustomerMenu from "@/components/CustomerMenu";
 export default function ProfilePage() {
 
   const [fullName, setFullName] = useState("");
@@ -67,6 +68,7 @@ const supabase = createClient();
   }
   return (
     <main className="min-h-screen bg-sky-50 py-12 px-6">
+      <CustomerMenu />
       <div className="max-w-3xl mx-auto">
 
         <h1 className="text-4xl font-black text-black mb-8">

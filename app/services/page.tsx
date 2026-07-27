@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import CustomerMenu from "@/components/CustomerMenu";
 
 type Service = {
   id: string;
@@ -72,6 +73,7 @@ const categories = [
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-sky-50 to-white py-14 px-6">
+      <CustomerMenu />
       <div className="max-w-7xl mx-auto">
 
         <div className="text-center mb-14">

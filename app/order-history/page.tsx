@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
+import CustomerMenu from "@/components/CustomerMenu";
 
 export default function OrderHistory() {
   const router = useRouter();
@@ -60,6 +61,7 @@ export default function OrderHistory() {
 
   return (
     <main className="min-h-screen bg-black text-white py-10 px-6">
+        <CustomerMenu />
 
       <div className="max-w-6xl mx-auto">
 
