@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
-export default function PaymentCallbackPage() {
+function PaymentCallbackContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -67,7 +67,6 @@ export default function PaymentCallbackPage() {
           return;
         }
 
-        // Success
         setMessage(
           "Payment successful! Order created 🎉"
         );
@@ -90,14 +89,11 @@ export default function PaymentCallbackPage() {
     }
 
     processPayment();
-
   }, [reference, router]);
-
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-sky-50">
       <div className="bg-white rounded-2xl shadow-lg p-8 text-center max-w-lg">
-
         <h1 className="text-3xl font-bold text-sky-700">
           Payment Status
         </h1>
@@ -105,8 +101,21 @@ export default function PaymentCallbackPage() {
         <p className="mt-5 text-lg">
           {message}
         </p>
-
       </div>
     </main>
+  );
+}
+
+export default function PaymentCallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen flex items-center justify-center">
+          Loading...
+        </main>
+      }
+    >
+      <PaymentCallbackContent />
+    </Suspense>
   );
 }

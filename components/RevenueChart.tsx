@@ -1,13 +1,13 @@
 "use client";
 
 import {
+  ResponsiveContainer,
   LineChart,
   Line,
   CartesianGrid,
   XAxis,
   YAxis,
   Tooltip,
-  ResponsiveContainer,
 } from "recharts";
 
 type RevenuePoint = {
@@ -36,9 +36,10 @@ export default function RevenueChart({
             <YAxis />
 
             <Tooltip
-              formatter={(value: number) =>
-                [`₦${value.toLocaleString()}`, "Revenue"]
-              }
+              formatter={(value) => [
+                "NGN " + Number(value ?? 0).toLocaleString(),
+                "Revenue",
+              ]}
             />
 
             <Line
