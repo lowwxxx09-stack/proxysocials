@@ -1,12 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 
 export default function ResetPasswordPage() {
   const supabase = createClient();
   const router = useRouter();
+  useEffect(() => {
+  async function handleRecovery() {
+    const hash = window.location.hash;
+
+    if (!hash) return;
+
+    const params = new URLSearchParams(hash.substring(1));
+
+    const access_token = params.get("access_token");
+    const refresh_token = params.get("refresh_token");
+
+    if (access_token && refresh_token) {
+      await supabase.auth.setSession({
+        access_token,
+        refresh_token,
+      });
+    }
+  }
+
+  handleRecovery();
+}, [supabase]);
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
