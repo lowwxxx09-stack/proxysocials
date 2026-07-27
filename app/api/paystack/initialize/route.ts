@@ -49,7 +49,7 @@ console.log({
           amount,
           currency: "NGN",
           callback_url:
-            "http://localhost:3000/payment/callback",
+  "https://proxysocials.vercel.app/payment/callback",
 
           metadata: {
             customerName,
