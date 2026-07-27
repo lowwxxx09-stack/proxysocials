@@ -68,15 +68,16 @@ if (existingOrder) {
   });
 }
 console.log("ORDER CONTENT:", orderContent);
-const { data: stock, error: stockError } = await supabase
+const { data: stockList, error: stockError } = await supabase
   .from("stock")
   .select("*")
   .eq("is_used", false)
   .eq("status", "available")
-  .limit(1)
-  .single();
+  .limit(1);
 
-  console.log("STOCK:", stock);
+const stock = stockList?.[0];
+
+console.log("STOCK:", stock);
 console.log("STOCK ERROR:", stockError);
 
 if (stockError || !stock) {
