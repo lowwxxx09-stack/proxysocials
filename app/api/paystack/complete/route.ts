@@ -54,7 +54,24 @@ export async function POST(request: NextRequest) {
   const metadata = verifyData.data.metadata;
   console.log("PAYSTACK METADATA:");
 console.log(metadata);
-const orderContent = JSON.parse(metadata.orderContent);
+let orderContent;
+
+try {
+  orderContent = JSON.parse(metadata.orderContent);
+} catch (e) {
+  console.error("JSON PARSE FAILED");
+  console.error(e);
+
+  return NextResponse.json(
+    {
+      status: false,
+      message: "JSON parse failed",
+    },
+    {
+      status: 500,
+    }
+  );
+}
 const { data: existingOrder } = await supabase
   .from("order")
   .select("id")
