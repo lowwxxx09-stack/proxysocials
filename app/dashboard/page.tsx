@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
+import CustomerMenu from "@/components/CustomerMenu";
 import Link from "next/link";
 
 export default function Dashboard() {
@@ -82,6 +83,7 @@ if (loading) {
 }
     return (
   <main className="min-h-screen bg-gradient-to-b from-sky-50 to-white px-5 py-12">
+    <CustomerMenu />
 
     <div className="max-w-6xl mx-auto">
 
