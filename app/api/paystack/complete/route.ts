@@ -85,6 +85,8 @@ if (existingOrder) {
   });
 }
 console.log("ORDER CONTENT:", orderContent);
+console.log("REACHED STOCK QUERY");
+
 const { data: stockList, error: stockError } = await supabase
   .from("stock")
   .select("*")
