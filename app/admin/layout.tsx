@@ -39,6 +39,12 @@ export default function AdminLayout({
                 Orders
               </Link>
 
+<Link
+  href="/admin/stock"
+  className="bg-sky-100 text-sky-800 px-5 py-2 rounded-xl text-lg font-black tracking-wide hover:bg-sky-200 transition"
+>
+  Stock
+</Link>
               <Link
                 href="/admin/services"
                 className="font-semibold text-gray-700 hover:text-sky-600"

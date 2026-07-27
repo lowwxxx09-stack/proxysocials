@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
+import Link from "next/link";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -29,20 +30,15 @@ const supabase = createClient();
     }
 
     const { data, error } = await supabase
-      .from("profiles")
-      .select(`
-  *,
-  services (
-    title,
-    category
-  )
-`)
-      .eq("id", user.id)
-      .single();
+  .from("profiles")
+  .select("*")
+  .eq("id", user.id)
+  .single();
 
     if (error) {
-      console.log(error.message);
-    }
+  console.error(error);
+  return;
+}
 
     setProfile(data);
 
@@ -108,16 +104,22 @@ if (loading) {
 
 
           <p className="mt-2 text-gray-500">
-            WhatsApp: {profile?.phone}
-          </p>
+  WhatsApp: {profile?.phone}
+</p>
 
+<div className="mt-6">
+  <Link
+    href="/profile"
+    className="inline-block bg-sky-600 hover:bg-sky-700 text-white px-6 py-3 rounded-2xl font-bold transition"
+  >
+    👤 My Profile
+  </Link>
+</div>
 
-        </div>
+</div>
 
-
-
-        <button
-          onClick={logout}
+<button
+  onClick={logout}
           className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-2xl font-bold transition"
         >
           Logout

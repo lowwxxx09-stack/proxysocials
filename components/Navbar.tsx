@@ -1,21 +1,28 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <nav className="bg-white shadow-sm px-4 md:px-6 py-4">
-      <div className="max-w-6xl mx-auto flex items-center justify-between">
+    <nav className="sticky top-0 z-[9999] bg-white shadow-sm">
+      <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-4">
 
         {/* Logo */}
-        <a href="/" className="text-xl md:text-2xl font-extrabold text-sky-700">
+        <Link
+          href="/"
+          className="text-2xl font-extrabold text-sky-700"
+        >
           ProxySocials
-        </a>
+        </Link>
+
+    
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-8">
+
           <a href="#services" className="text-gray-700 hover:text-sky-700">
             Services
           </a>
@@ -32,74 +39,92 @@ export default function Navbar() {
             href="https://wa.me/2348161250950"
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-green-500 text-white px-5 py-2 rounded-xl font-semibold hover:bg-green-600"
+            className="bg-green-500 text-white px-5 py-2 rounded-xl font-semibold hover:bg-green-600 transition"
           >
             WhatsApp
           </a>
 
-          <a
+          <Link
             href="/login"
-            className="border-2 border-sky-600 text-sky-700 px-5 py-2 rounded-xl font-semibold hover:bg-sky-600 hover:text-white"
+            className="border-2 border-sky-600 text-sky-700 px-5 py-2 rounded-xl font-semibold hover:bg-sky-600 hover:text-white transition"
           >
             Login
-          </a>
+          </Link>
 
-          <a
+          <Link
             href="/signup"
-            className="bg-sky-600 text-white px-5 py-2 rounded-xl font-semibold hover:bg-sky-700"
+            className="bg-sky-600 text-white px-5 py-2 rounded-xl font-semibold hover:bg-sky-700 transition"
           >
             Sign Up
-          </a>
+          </Link>
+
         </div>
 
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden text-3xl text-sky-700"
-          onClick={() => setOpen(!open)}
-        >
-          ☰
-        </button>
+  onClick={() => setOpen(!open)}
+  className="md:hidden text-sky-700 text-3xl"
+>
+  ☰
+</button>
       </div>
 
       {/* Mobile Menu */}
       {open && (
-        <div className="md:hidden mt-4 flex flex-col gap-3">
+        <div className="absolute top-full left-0 w-full bg-white shadow-lg border-t z-50 md:hidden">
 
-          <a href="#services" onClick={() => setOpen(false)}>
-            Services
-          </a>
+          <div className="flex flex-col p-4 gap-4">
 
-          <a href="#how-it-works" onClick={() => setOpen(false)}>
-            How It Works
-          </a>
+            <a
+              href="#services"
+              onClick={() => setOpen(false)}
+              className="text-gray-700"
+            >
+              Services
+            </a>
 
-          <a href="#faq" onClick={() => setOpen(false)}>
-            FAQ
-          </a>
+            <a
+              href="#how-it-works"
+              onClick={() => setOpen(false)}
+              className="text-gray-700"
+            >
+              How It Works
+            </a>
 
-          <a
-            href="https://wa.me/2348161250950"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-green-500 text-white text-center py-3 rounded-xl font-semibold"
-          >
-            WhatsApp
-          </a>
+            <a
+              href="#faq"
+              onClick={() => setOpen(false)}
+              className="text-gray-700"
+            >
+              FAQ
+            </a>
 
-          <a
-            href="/login"
-            className="border-2 border-sky-600 text-sky-700 text-center py-3 rounded-xl font-semibold"
-          >
-            Login
-          </a>
+            <a
+              href="https://wa.me/2348161250950"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-green-500 text-white text-center py-3 rounded-xl font-semibold"
+            >
+              WhatsApp
+            </a>
 
-          <a
-            href="/signup"
-            className="bg-sky-600 text-white text-center py-3 rounded-xl font-semibold"
-          >
-            Sign Up
-          </a>
+            <Link
+              href="/login"
+              onClick={() => setOpen(false)}
+              className="border-2 border-sky-600 text-sky-700 text-center py-3 rounded-xl font-semibold"
+            >
+              Login
+            </Link>
 
+            <Link
+              href="/signup"
+              onClick={() => setOpen(false)}
+              className="bg-sky-600 text-white text-center py-3 rounded-xl font-semibold"
+            >
+              Sign Up
+            </Link>
+
+          </div>
         </div>
       )}
     </nav>

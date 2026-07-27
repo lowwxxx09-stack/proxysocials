@@ -20,10 +20,19 @@ export default function ServicesPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
-
+const [selectedCategory, setSelectedCategory] = useState("ALL");
   useEffect(() => {
     fetchServices();
   }, []);
+
+const categories = [
+  { label: "🔥 All", value: "ALL" },
+  { label: "📘 Facebook", value: "FACEBOOK" },
+  { label: "💕 Facebook Dating", value: "FACEBOOK DATING" },
+  { label: "🎵 TikTok", value: "TIKTOK" },
+  { label: "🐦 X", value: "X" },
+  { label: "🎬 Streaming", value: "streaming" },
+];
 
   async function fetchServices() {
     const { data, error } = await supabase
@@ -44,6 +53,12 @@ export default function ServicesPage() {
   function orderService(id: string) {
     router.push("/checkout/" + id);
   }
+  const filteredServices =
+  selectedCategory === "ALL"
+    ? services
+    : services.filter(
+        (service) => service.category === selectedCategory
+      );
 
   if (loading) {
     return (
@@ -57,7 +72,6 @@ export default function ServicesPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-sky-50 to-white py-14 px-6">
-
       <div className="max-w-7xl mx-auto">
 
         <div className="text-center mb-14">
@@ -72,6 +86,22 @@ export default function ServicesPage() {
           </p>
 
         </div>
+
+        <div className="flex flex-wrap justify-center gap-3 mb-10">
+  {categories.map((category) => (
+    <button
+      key={category.value}
+      onClick={() => setSelectedCategory(category.value)}
+      className={`px-5 py-2 rounded-full font-semibold transition ${
+        selectedCategory === category.value
+          ? "bg-sky-600 text-white"
+          : "bg-white border border-sky-200 text-gray-700 hover:bg-sky-50"
+      }`}
+    >
+      {category.label}
+    </button>
+  ))}
+</div>
 
         {errorMessage && (
           <div className="bg-red-100 text-red-700 p-5 rounded-2xl mb-8 text-center">
@@ -93,7 +123,7 @@ export default function ServicesPage() {
 
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
 
-          {services.map((service) => (
+          {filteredServices.map((service) => (
 
             <div
               key={service.id}
