@@ -69,7 +69,6 @@ console.log("ORDER CONTENT:", orderContent);
 const { data: stock, error: stockError } = await supabase
   .from("stock")
   .select("*")
-  .eq("service_id", metadata.serviceId)
   .eq("is_used", false)
   .eq("status", "available")
   .limit(1)
