@@ -76,6 +76,9 @@ const { data: stock, error: stockError } = await supabase
   .limit(1)
   .single();
 
+  console.log("STOCK:", stock);
+console.log("STOCK ERROR:", stockError);
+
 if (stockError || !stock) {
   return NextResponse.json(
     {
