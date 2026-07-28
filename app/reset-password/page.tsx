@@ -10,6 +10,12 @@ export default function ResetPasswordPage() {
   const supabase = createClient();
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  
   useEffect(() => {
   async function exchangeCode() {
     const code = searchParams.get("code");
@@ -27,10 +33,7 @@ export default function ResetPasswordPage() {
   exchangeCode();
 }, [searchParams, supabase]);
 
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
+  
 
   async function updatePassword() {
     if (password !== confirmPassword) {
