@@ -1,33 +1,30 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 
 export default function ResetPasswordPage() {
   const supabase = createClient();
   const router = useRouter();
+  const searchParams = useSearchParams();
   useEffect(() => {
-  async function handleRecovery() {
-    const hash = window.location.hash;
+  async function exchangeCode() {
+    const code = searchParams.get("code");
 
-    if (!hash) return;
+    if (!code) return;
 
-    const params = new URLSearchParams(hash.substring(1));
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
 
-    const access_token = params.get("access_token");
-    const refresh_token = params.get("refresh_token");
-
-    if (access_token && refresh_token) {
-      await supabase.auth.setSession({
-        access_token,
-        refresh_token,
-      });
+    if (error) {
+      console.error("Exchange Error:", error.message);
+      setMessage(error.message);
     }
   }
 
-  handleRecovery();
-}, [supabase]);
+  exchangeCode();
+}, [searchParams, supabase]);
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
