@@ -22,6 +22,7 @@ export default function ServicesPage() {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 const [selectedCategory, setSelectedCategory] = useState("ALL");
+const [searchTerm, setSearchTerm] = useState("");
   useEffect(() => {
     fetchServices();
   }, []);
@@ -54,12 +55,21 @@ const categories = [
   function orderService(id: string) {
     router.push("/checkout/" + id);
   }
-  const filteredServices =
-  selectedCategory === "ALL"
-    ? services
-    : services.filter(
-        (service) => service.category === selectedCategory
-      );
+  const filteredServices = services.filter((service) => {
+  const matchesCategory =
+    selectedCategory === "ALL" ||
+    service.category === selectedCategory;
+
+  const matchesSearch =
+    service.title
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase()) ||
+    service.description
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+
+  return matchesCategory && matchesSearch;
+});
 
   if (loading) {
     return (
@@ -89,6 +99,15 @@ const categories = [
 
         </div>
 
+       <div className="max-w-xl mx-auto mb-8">
+  <input
+    type="text"
+    placeholder="Search Netflix, Facebook, TikTok..."
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+    className="w-full rounded-2xl border border-sky-200 px-5 py-4 text-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+  />
+</div>
         <div className="flex flex-wrap justify-center gap-3 mb-10">
   {categories.map((category) => (
     <button
