@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { supabase } from "@/lib/supabase";
 import OrdersTable from "@/components/OrdersTable";
 
@@ -14,6 +16,7 @@ export default async function OrdersPage() {
     `
     )
     .order("created_at", { ascending: false });
+    console.log(orders);
 const totalOrders = orders?.length || 0;
 
 const pendingOrders =
