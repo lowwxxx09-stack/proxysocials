@@ -16,7 +16,7 @@ export default async function OrdersPage() {
     `
     )
     .order("created_at", { ascending: false });
-    console.log(orders);
+    console.log("Orders fetched:", orders);
 const totalOrders = orders?.length || 0;
 
 const pendingOrders =
