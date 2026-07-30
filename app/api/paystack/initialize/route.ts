@@ -48,7 +48,10 @@ console.log({
           email,
           amount,
           currency: "NGN",
-        callback_url: "https://proxysocials.com/payment/callback",
+        callback_url:
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:3000/payment/callback"
+    : "https://proxysocials.com/payment/callback",
 
 
           metadata: {

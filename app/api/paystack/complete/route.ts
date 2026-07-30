@@ -157,6 +157,20 @@ const { error: updateError } = await supabase
     status: "used",
   })
   .eq("id", stock.id);
+  // Recalculate remaining stock
+const { count } = await supabase
+  .from("stock")
+  .select("*", { count: "exact", head: true })
+  .eq("service_id", metadata.serviceId)
+  .eq("is_used", false)
+  .eq("status", "available");
+
+await supabase
+  .from("services")
+  .update({
+    available_stock: count ?? 0,
+  })
+  .eq("id", metadata.serviceId);
 
 if (updateError) {
   console.error(updateError);

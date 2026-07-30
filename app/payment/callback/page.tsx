@@ -27,8 +27,11 @@ function PaymentCallbackContent() {
         );
 
         const verifyData = await verifyResponse.json();
-
-        if (
+console.log("VERIFY RESPONSE:", verifyData);
+        
+console.log("verifyData.status:", verifyData.status);
+console.log("verifyData.data:", verifyData.data);
+if (
           !verifyData.status ||
           verifyData.data?.status !== "success"
         ) {

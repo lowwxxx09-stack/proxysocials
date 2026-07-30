@@ -13,6 +13,7 @@ type Service = {
   price: number;
   delivery_time: string;
   image: string;
+  available_stock: number;
 };
 
 export default function ServicesPage() {
@@ -204,12 +205,39 @@ const categories = [
 
                 </div>
 
+                <div className="mt-4">
+  {service.available_stock > 20 ? (
+    <p className="text-green-600 font-semibold">
+      🟢 {service.available_stock} Available
+    </p>
+  ) : service.available_stock > 5 ? (
+    <p className="text-yellow-600 font-semibold">
+      🟡 {service.available_stock} Available
+    </p>
+  ) : service.available_stock > 0 ? (
+    <p className="text-red-600 font-bold">
+      🔥 Only {service.available_stock} Left
+    </p>
+  ) : (
+    <p className="text-gray-500 font-bold">
+      ❌ Out of Stock
+    </p>
+  )}
+</div>
+
                 <button
-                  onClick={() => orderService(service.id)}
-                  className="mt-8 w-full rounded-2xl bg-sky-600 hover:bg-sky-700 text-white py-3 font-bold shadow-md hover:shadow-xl transition-all"
-                >
-                  Order Now
-                </button>
+  onClick={() => orderService(service.id)}
+  disabled={service.available_stock <= 0}
+  className={`mt-8 w-full rounded-2xl py-3 font-bold shadow-md transition-all ${
+    service.available_stock > 0
+      ? "bg-sky-600 hover:bg-sky-700 text-white hover:shadow-xl"
+      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+  }`}
+>
+  {service.available_stock > 0
+    ? "Order Now"
+    : "Out of Stock"}
+</button>
 
               </div>
 
