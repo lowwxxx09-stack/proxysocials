@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import CustomerMenu from "@/components/CustomerMenu";
+import TelegramBanner from "@/components/TelegramBanner";
 import Link from "next/link";
 
 export default function Dashboard() {
@@ -87,6 +88,7 @@ if (loading) {
 
     <div className="max-w-6xl mx-auto">
 
+<TelegramBanner />
 
       {/* Dashboard Header */}
 
