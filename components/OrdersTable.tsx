@@ -157,7 +157,7 @@ const paginatedOrders = filteredOrders.slice(
   <button
     onClick={() => setFilter("pending_verification")}
     className={`px-4 py-2 rounded-xl font-semibold ${
-      filter === "pending"
+      filter === "pending_verification"
         ? "bg-yellow-500 text-white"
         : "bg-white border"
     }`}
@@ -213,14 +213,14 @@ const paginatedOrders = filteredOrders.slice(
 
               <span
   className={`px-4 py-2 rounded-full font-semibold text-sm ${
-    order.order_status === "pending"
+    order.order_status === "pending_verification"
       ? "bg-yellow-100 text-yellow-700"
       : order.order_status === "completed"
       ? "bg-green-100 text-green-700"
       : "bg-red-100 text-red-700"
   }`}
 >
-  {order.order_status === "pending"
+  {order.order_status === "pending_verification"
     ? "🟡 Pending"
     : order.order_status === "completed"
     ? "🟢 Completed"
