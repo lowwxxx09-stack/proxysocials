@@ -48,8 +48,8 @@ console.log({
           email,
           amount,
           currency: "NGN",
-          callback_url:
-  "https://proxysocials.vercel.app/payment/callback",
+        callback_url: "https://proxysocials.com/payment/callback",
+
 
           metadata: {
             customerName,
