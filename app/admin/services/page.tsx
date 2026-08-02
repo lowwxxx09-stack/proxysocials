@@ -103,6 +103,16 @@ export default async function AdminServicesPage() {
                         ₦{service.price}
                       </p>
 
+                      <p
+  className={`mt-2 font-semibold ${
+    service.is_active
+      ? "text-green-600"
+      : "text-gray-500"
+  }`}
+>
+  {service.is_active ? "🟢 Active" : "⚪ Inactive"}
+</p>
+
                     </div>
 
                   </div>
@@ -113,7 +123,7 @@ export default async function AdminServicesPage() {
 
                     <Link
                       href={"/admin/services/" + service.id + "/edit"}
-                      className="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg"
+                      className="bg-sky-600 hover:bg-sky-700 text-white px-2 py-1 text-sm rounded-lg"
                     >
                       Edit
                     </Link>

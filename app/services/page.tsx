@@ -39,9 +39,10 @@ const categories = [
 
   async function fetchServices() {
     const { data, error } = await supabase
-      .from("services")
-      .select("*")
-      .limit(30);
+  .from("services")
+  .select("*")
+  .eq("is_active", true)
+  .limit(30);
 
     if (error) {
       setErrorMessage(error.message);

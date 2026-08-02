@@ -12,7 +12,7 @@ export default function DeleteServiceButton({
 
   async function handleDelete() {
     const confirmed = window.confirm(
-      "Are you sure you want to delete this service?"
+      "Are you sure you want to deactivate this service? Customers will no longer be able to purchase it."
     );
 
     if (!confirmed) return;
@@ -24,10 +24,12 @@ export default function DeleteServiceButton({
     console.log("CURRENT USER:", userData.user);
 
     const { data, error } = await supabase
-      .from("services")
-      .delete()
-      .eq("id", id)
-      .select();
+  .from("services")
+  .update({
+    is_active: false,
+  })
+  .eq("id", id)
+  .select();
 
     console.log("DELETE RESULT:", data);
     console.log("DELETE ERROR:", error);
@@ -42,7 +44,7 @@ export default function DeleteServiceButton({
       return;
     }
 
-    alert("Service deleted successfully!");
+    alert("Service deactivated successfully!");
 
     router.refresh();
   }
@@ -52,7 +54,7 @@ export default function DeleteServiceButton({
   onClick={handleDelete}
   className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 text-sm rounded-lg"
 >
-  Delete
+  Deactivate
 </button>
   );
 }
