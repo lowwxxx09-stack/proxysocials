@@ -43,6 +43,7 @@ export default function AdminStockPage() {
   }
 
   async function saveStock() {
+  
     if (!selectedService) {
       alert("Please select a service.");
       return;
@@ -61,20 +62,24 @@ export default function AdminStockPage() {
         recovery_email,
       ] = row.split(",");
 
-      return {
-        service_id: selectedService.id,
-        username: username?.trim(),
-        password: password?.trim(),
-        twofa: twofa?.trim(),
-        email: email?.trim(),
-        recovery_email: recovery_email?.trim(),
-        is_used: false,
-      };
+       return {
+  service_id: selectedService.id,
+  username: username?.trim(),
+  password: password?.trim(),
+  twofa: twofa?.trim(),
+  email: email?.trim(),
+  recovery_email: recovery_email?.trim(),
+  is_used: false,
+  status: "available",
+};
     });
 
     const { error } = await supabase
       .from("stock")
       .insert(stockRows);
+      await loadData();
+
+
 
     if (error) {
       alert(error.message);
@@ -83,9 +88,30 @@ export default function AdminStockPage() {
 
     alert(stockRows.length + " accounts uploaded successfully.");
 
-    setStockData("");
+setStockData("");
 
-    loadData();
+loadData();
+
+    const { count } = await supabase
+  .from("stock")
+  .select("*", { count: "exact", head: true })
+  .eq("service_id", selectedService.id)
+  .eq("is_used", false);
+
+const { data: updatedService, error: updateError } = await supabase
+  .from("services")
+  .update({
+    available_stock: count || 0,
+  })
+  .eq("id", selectedService.id)
+  .select();
+
+
+
+
+
+
+    return;
   }
   return (
     <main className="min-h-screen bg-sky-50 p-8">

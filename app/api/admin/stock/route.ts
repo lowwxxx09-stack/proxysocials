@@ -28,6 +28,26 @@ export async function POST(request: NextRequest) {
       .from("stock")
       .insert(stockRows);
 
+      console.log("STOCK ROWS:", stockRows);
+
+      // Automatically update available_stock
+const serviceIds = [...new Set(stockRows.map((row) => row.service_id))];
+
+for (const serviceId of serviceIds) {
+  const { count } = await supabase
+    .from("stock")
+    .select("*", { count: "exact", head: true })
+    .eq("service_id", serviceId)
+    .eq("status", "available");
+
+  await supabase
+    .from("services")
+    .update({
+      available_stock: count || 0,
+    })
+    .eq("id", serviceId);
+}
+
     if (error) {
       console.error(error);
 
