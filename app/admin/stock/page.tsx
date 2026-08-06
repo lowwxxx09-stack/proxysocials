@@ -24,7 +24,17 @@ export default function AdminStockPage() {
     if (servicesError) {
       console.log(servicesError.message);
     } else {
-      setServices(servicesData || []);
+      setServices(servicesData ?? []);
+
+if (selectedService && servicesData) {
+  const refreshed = servicesData.find(
+    (s) => s.id === selectedService.id
+  );
+
+  if (refreshed) {
+    setSelectedService(refreshed);
+  }
+}
     }
 
     const { data: stockRows, error: stockError } =
@@ -77,7 +87,8 @@ export default function AdminStockPage() {
     const { error } = await supabase
       .from("stock")
       .insert(stockRows);
-      await loadData();
+      await new Promise((resolve) => setTimeout(resolve, 300));
+await loadData();
 
 
 
@@ -92,24 +103,7 @@ setStockData("");
 
 loadData();
 
-    const { count } = await supabase
-  .from("stock")
-  .select("*", { count: "exact", head: true })
-  .eq("service_id", selectedService.id)
-  .eq("is_used", false);
-
-const { data: updatedService, error: updateError } = await supabase
-  .from("services")
-  .update({
-    available_stock: count || 0,
-  })
-  .eq("id", selectedService.id)
-  .select();
-
-
-
-
-
+  
 
     return;
   }

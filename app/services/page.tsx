@@ -42,7 +42,7 @@ const categories = [
   .from("services")
   .select("*")
   .eq("is_active", true)
-  .limit(30);
+  .order("created_at", { ascending: false });
 
     if (error) {
       setErrorMessage(error.message);
