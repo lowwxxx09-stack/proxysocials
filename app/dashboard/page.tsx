@@ -12,6 +12,7 @@ export default function Dashboard() {
 const supabase = createClient();
   const [profile, setProfile] = useState<any>(null);
   const [orders, setOrders] = useState<any[]>([]);
+  const [wallet, setWallet] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -43,6 +44,18 @@ const supabase = createClient();
 }
 
     setProfile(data);
+
+    const { data: walletData, error: walletError } = await supabase
+  .from("wallets")
+  .select("*")
+  .eq("user_id", user.id)
+  .single();
+
+if (walletError) {
+  console.log(walletError.message);
+} else {
+  setWallet(walletData);
+}
 
 const { data: orderData, error: orderError } = await supabase
   .from("order")
@@ -160,8 +173,8 @@ if (loading) {
           </p>
 
           <h2 className="text-4xl font-black text-sky-700 mt-3">
-            ₦{profile?.wallet_balance || 0}
-          </h2>
+  ₦{Number(wallet?.balance || 0).toLocaleString()}
+</h2>
 
         </div>
 
@@ -187,6 +200,30 @@ if (loading) {
 
 
         <div className="flex justify-between items-center mb-8">
+
+        {/* Wallet */}
+
+<div className="bg-white rounded-3xl shadow-xl p-8 mb-8">
+
+  <h2 className="text-3xl font-black text-sky-700">
+    My Wallet
+  </h2>
+
+  <p className="text-gray-500 mt-2">
+    Available Balance
+  </p>
+
+  <h1 className="text-4xl font-black text-sky-700 mt-3">
+  ₦{Number(wallet?.balance || 0).toLocaleString()}
+</h1>
+
+  <button
+    className="mt-6 bg-sky-600 hover:bg-sky-700 text-white px-6 py-3 rounded-xl font-bold transition"
+  >
+    Fund Wallet
+  </button>
+
+</div>
 
           <h2 className="text-3xl font-black text-sky-700">
             My Orders
