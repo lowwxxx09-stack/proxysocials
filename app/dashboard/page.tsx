@@ -218,10 +218,11 @@ if (loading) {
 </h1>
 
   <button
-    className="mt-6 bg-sky-600 hover:bg-sky-700 text-white px-6 py-3 rounded-xl font-bold transition"
-  >
-    Fund Wallet
-  </button>
+  onClick={() => router.push("/fund-wallet")}
+  className="mt-6 bg-sky-600 hover:bg-sky-700 text-white px-6 py-3 rounded-xl font-bold transition"
+>
+  Fund Wallet
+</button>
 
 </div>
 
