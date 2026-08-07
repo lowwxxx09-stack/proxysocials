@@ -40,8 +40,9 @@ export default function Signup() {
     }
 
     setLoading(true);
-
+    
     const { data, error } = await supabase.auth.signUp({
+      
       email,
       password,
       options: {
@@ -53,10 +54,11 @@ export default function Signup() {
     });
 
     if (error) {
-      setError(error.message);
-      setLoading(false);
-      return;
-    }
+  
+  setError(error.message);
+  setLoading(false);
+  return;
+}
 
     const user = data.user;
 
