@@ -1,16 +1,46 @@
 "use client";
 
 import { useState } from "react";
+import { createClient } from "@/utils/supabase/client";
 
 export default function FundWalletPage() {
+  const supabase = createClient();
   const [amount, setAmount] = useState("");
-  function continueToPayment() {
+  async function continueToPayment() {
   if (!amount || Number(amount) < 100) {
     alert("Minimum funding amount is ₦100.");
     return;
   }
 
-  alert(`Funding ₦${Number(amount).toLocaleString()}`);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    alert("Please login again.");
+    return;
+  }
+
+  const response = await fetch("/api/paystack/initialize", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email: user.email,
+      amount: Number(amount) * 100,
+      userId: user.id,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!data.status) {
+    alert(data.message || "Unable to initialize payment.");
+    return;
+  }
+
+  window.location.href = data.data.authorization_url;
 }
   return (
     <main className="min-h-screen bg-sky-50 flex items-center justify-center p-6">
