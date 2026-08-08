@@ -173,15 +173,17 @@ if (loading) {
 
 
 
-        <div className="bg-white rounded-3xl border border-sky-100 shadow-xl p-6">
+        <div className="bg-white rounded-3xl border border-sky-100 shadow-xl p-4 sm:p-6">
 
-          <p className="text-gray-500 font-semibold">
-            Wallet Balance
-          </p>
+  <p className="text-gray-500 font-semibold text-sm sm:text-base">
+    Wallet Balance
+  </p>
 
-          <h1 className="text-4xl font-black text-sky-700 mt-3">
-  ₦{Number(wallet?.balance || 0).toLocaleString()}
-</h1>
+  <h1 className="text-3xl sm:text-4xl font-black text-sky-700 mt-3">
+    ₦{Number(wallet?.balance || 0).toLocaleString()}
+  </h1>
+
+</div>
 
         </div>
 
@@ -427,7 +429,7 @@ if (loading) {
 
         )}
 
-      </div>
+      
 
 
       
