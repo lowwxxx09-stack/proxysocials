@@ -173,78 +173,49 @@ if (loading) {
 
 
 
-        <div className="bg-white rounded-3xl border border-sky-100 shadow-xl p-4 sm:p-6">
+        
 
-  <p className="text-gray-500 font-semibold text-sm sm:text-base">
-    Wallet Balance
-  </p>
 
-  <h1 className="text-3xl sm:text-4xl font-black text-sky-700 mt-3">
-    ₦{Number(wallet?.balance || 0).toLocaleString()}
-  </h1>
+<div className="bg-white rounded-2xl border border-sky-100 shadow-lg p-5 sm:p-6 flex items-center justify-between gap-4">
+
+  <div>
+    <p className="text-gray-500 font-semibold text-sm sm:text-base">
+      Wallet Balance
+    </p>
+
+    <h1 className="text-3xl sm:text-4xl font-black text-sky-700 mt-2">
+      ₦{Number(wallet?.balance || 0).toLocaleString()}
+    </h1>
+  </div>
+
+  <Link
+    href="/fund-wallet"
+    className="bg-sky-600 hover:bg-sky-700 text-white px-4 py-3 sm:px-6 sm:py-3 rounded-xl font-bold text-sm sm:text-base text-center transition whitespace-nowrap"
+  >
+    Fund Wallet
+  </Link>
 
 </div>
 
-        </div>
+</div>
 
 
 
-        <div className="bg-white rounded-3xl border border-sky-100 shadow-xl p-6">
-
-          <p className="text-gray-500 font-semibold">
-            Referral Code
-          </p>
-
-          <h2 className="text-2xl font-black text-sky-700 mt-4 break-all">
-            {profile?.referral_code || "None"}
-          </h2>
-
-        </div>
-
-
-      </div>
       {/* Orders Section */}
 
-      <div className="bg-white rounded-3xl border border-sky-100 shadow-xl p-8 mt-8">
+<div className="bg-white rounded-3xl border border-sky-100 shadow-xl p-8 mt-8">
 
+  <div className="flex items-center justify-between gap-3 mb-8">
 
-        <div className="flex justify-between items-center mb-8">
+    <h2 className="text-2xl sm:text-3xl font-black text-sky-700">
+      My Orders
+    </h2>
 
-        {/* Wallet */}
+    <span className="text-gray-500 font-semibold text-sm sm:text-base whitespace-nowrap">
+      {orders.length} total
+    </span>
 
-<div className="bg-white rounded-3xl shadow-xl p-8 mb-8">
-
-  <h2 className="text-3xl font-black text-sky-700">
-    My Wallet
-  </h2>
-
-  <p className="text-gray-500 mt-2">
-    Available Balance
-  </p>
-
-  <h1 className="text-4xl font-black text-sky-700 mt-3">
-  ₦{Number(wallet?.balance || 0).toLocaleString()}
-</h1>
-
-  <button
-  onClick={() => router.push("/fund-wallet")}
-  className="mt-6 bg-sky-600 hover:bg-sky-700 text-white px-6 py-3 rounded-xl font-bold transition"
->
-  Fund Wallet
-</button>
-
-</div>
-
-          <h2 className="text-3xl font-black text-sky-700">
-            My Orders
-          </h2>
-
-
-          <span className="text-gray-500 font-semibold">
-            {orders.length} total
-          </span>
-
-        </div>
+  </div>
 
 
 
@@ -430,7 +401,7 @@ if (loading) {
         )}
 
       
-
+</div>
 
       
 
