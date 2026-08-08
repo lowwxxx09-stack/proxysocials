@@ -101,6 +101,18 @@ export default function CustomerMenu() {
 </Link>
 
 <Link
+  href="/fund-wallet"
+  onClick={closeMenu}
+  className={`block font-bold text-lg transition ${
+    pathname === "/fund-wallet"
+      ? "text-sky-400"
+      : "hover:text-sky-400"
+  }`}
+>
+  💰 Fund Wallet
+</Link>
+
+<Link
   href="/support"
   onClick={closeMenu}
   className={`block font-bold text-lg transition ${

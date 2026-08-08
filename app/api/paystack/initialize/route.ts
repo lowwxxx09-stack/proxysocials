@@ -55,15 +55,17 @@ console.log({
 
 
           metadata: {
-            customerName,
-            whatsappNumber,
-            serviceId,
-            note,
-            email,
-            amount,
-            userId,
-            orderContent: JSON.stringify(orderContent),
-          },
+  payment_type: serviceId ? "order" : "wallet",
+
+  customerName,
+  whatsappNumber,
+  serviceId,
+  note,
+  email,
+  amount,
+  userId,
+  orderContent: JSON.stringify(orderContent),
+},
         }),
       }
     );

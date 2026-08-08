@@ -45,6 +45,8 @@ const supabase = createClient();
 
     setProfile(data);
 
+
+
     const { data: walletData, error: walletError } = await supabase
   .from("wallets")
   .select("*")
@@ -52,10 +54,12 @@ const supabase = createClient();
   .single();
 
 if (walletError) {
-  console.log(walletError.message);
+  
 } else {
   setWallet(walletData);
 }
+
+
 
 const { data: orderData, error: orderError } = await supabase
   .from("order")
@@ -172,9 +176,9 @@ if (loading) {
             Wallet Balance
           </p>
 
-          <h2 className="text-4xl font-black text-sky-700 mt-3">
+          <h1 className="text-4xl font-black text-sky-700 mt-3">
   ₦{Number(wallet?.balance || 0).toLocaleString()}
-</h2>
+</h1>
 
         </div>
 

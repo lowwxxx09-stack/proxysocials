@@ -14,6 +14,12 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    console.log(
+  "PAYSTACK SECRET KEY LOADED:",
+  process.env.PAYSTACK_SECRET_KEY
+    ? "YES"
+    : "NO"
+);
     const response = await fetch(
       "https://api.paystack.co/transaction/verify/" + reference,
       {

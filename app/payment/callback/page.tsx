@@ -39,45 +39,83 @@ if (
           return;
         }
 
-        // Step 2: Create order
-        const completeResponse = await fetch(
-          "/api/paystack/complete",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              reference,
-            }),
-          }
-        );
+        const paymentType =
+  verifyData.data.metadata.payment_type;
 
-        const completeData =
-          await completeResponse.json();
+        if (paymentType === "order") {
+  const completeResponse = await fetch(
+    "/api/paystack/complete",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        reference,
+      }),
+    }
+  );
 
-        if (!completeData.status) {
-          console.error(
-            "Complete error:",
-            completeData
-          );
+  const completeData = await completeResponse.json();
 
-          setMessage(
-            completeData.message ||
-              "Order creation failed."
-          );
+  if (!completeData.status) {
+    console.error("Complete error:", completeData);
 
-          return;
-        }
+    setMessage(
+      completeData.message ||
+        "Order creation failed."
+    );
 
-        setMessage(
-          "Payment successful! Order created 🎉"
-        );
+    return;
+  }
 
-        setTimeout(() => {
-          router.push("/dashboard");
-          router.refresh();
-        }, 2000);
+  setMessage(
+    "Payment successful! Order created 🎉"
+  );
+
+  setTimeout(() => {
+    router.push("/dashboard");
+    router.refresh();
+  }, 2000);
+
+} else if (paymentType === "wallet") {
+  const walletResponse = await fetch(
+    "/api/wallet/credit",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userId: verifyData.data.metadata.userId,
+        reference,
+        amount: Number(verifyData.data.amount) / 100,
+      }),
+    }
+  );
+
+  const walletData = await walletResponse.json();
+
+  if (!walletData.status) {
+    console.error("Wallet credit error:", walletData);
+
+    setMessage(
+      walletData.message ||
+        "Unable to credit wallet."
+    );
+
+    return;
+  }
+
+  setMessage(
+    "Wallet funded successfully! 🎉"
+  );
+
+  setTimeout(() => {
+    router.push("/dashboard");
+    router.refresh();
+  }, 2000);
+}
 
       } catch (error) {
         console.error(
