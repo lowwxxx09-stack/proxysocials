@@ -51,10 +51,10 @@ const supabase = createClient();
   .from("wallets")
   .select("*")
   .eq("user_id", user.id)
-  .single();
+  .maybeSingle();
 
 if (walletError) {
-  
+  console.error("Dashboard wallet error:", walletError);
 } else {
   setWallet(walletData);
 }
