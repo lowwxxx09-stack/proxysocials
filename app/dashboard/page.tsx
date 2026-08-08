@@ -12,8 +12,8 @@ export default function Dashboard() {
 const supabase = createClient();
   const [profile, setProfile] = useState<any>(null);
   const [orders, setOrders] = useState<any[]>([]);
-  const [wallet, setWallet] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [wallet, setWallet] = useState<any>(null); 
+const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getProfile();
@@ -49,12 +49,15 @@ const supabase = createClient();
 
     const { data: walletData, error: walletError } = await supabase
   .from("wallets")
-  .select("*")
+  .select("id, user_id, balance")
   .eq("user_id", user.id)
   .maybeSingle();
 
+
+
 if (walletError) {
-  console.error("Dashboard wallet error:", walletError);
+  console.error("WALLET FETCH ERROR:", walletError);
+  setWallet(null);
 } else {
   setWallet(walletData);
 }
@@ -92,8 +95,8 @@ setLoading(false);
 
 if (loading) {
   return (
-    <main className="min-h-screen bg-sky-50 flex items-center justify-center">
-      <p className="text-sky-700 font-bold text-xl">
+    <main className="min-h-screen bg-sky-50 flex items-center justify-center">  
+    <p className="text-sky-700 font-bold text-xl">
         Loading Dashboard...
       </p>
     </main>
