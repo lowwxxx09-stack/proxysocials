@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import CustomerMenu from "@/components/CustomerMenu";
 import TelegramBanner from "@/components/TelegramBanner";
+import TelegramSupportButton from "@/components/TelegramSupportButton";
 import Link from "next/link";
 
 export default function Dashboard() {
@@ -455,7 +456,7 @@ if (loading) {
 
 
     </div>
-
+<TelegramSupportButton />
 
   </main>
 );
