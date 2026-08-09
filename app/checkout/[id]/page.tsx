@@ -36,12 +36,14 @@ export default function CheckoutPage() {
 
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState("");
+  const [walletBalance, setWalletBalance] = useState(0);
   const [note, setNote] = useState("");
 
 
 
 
   const [submitting, setSubmitting] = useState(false);
+  const [walletPaying, setWalletPaying] = useState(false);
   const [customerName, setCustomerName] = useState("");
   const [whatsappNumber, setWhatsappNumber] = useState("");
   const [email, setEmail] = useState("");
@@ -67,11 +69,25 @@ export default function CheckoutPage() {
     }
 
     setUserId(user.id);
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("full_name, phone")
-      .eq("id", user.id)
-      .single();
+
+const { data: walletData, error: walletError } = await supabase
+  .from("wallets")
+  .select("balance")
+  .eq("user_id", user.id)
+  .single();
+
+console.log("CHECKOUT WALLET:", walletData);
+console.log("CHECKOUT WALLET ERROR:", walletError);
+
+if (walletData) {
+  setWalletBalance(Number(walletData.balance));
+}
+
+const { data: profile } = await supabase
+  .from("profiles")
+  .select("full_name, phone")
+  .eq("id", user.id)
+  .single();
 
     if (profile) {
       setCustomerName(profile.full_name);
@@ -150,6 +166,48 @@ export default function CheckoutPage() {
     }
   }
 
+async function payWithWallet() {
+  setWalletPaying(true);
+
+  try {
+    const response = await fetch("/api/wallet/pay", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+  userId,
+  serviceId: service?.id,
+  amount: Number(service?.price ?? 0),
+  customerName,
+  whatsappNumber,
+  email,
+  note,
+        orderContent: {
+          quantity,
+          accountLink,
+          customDetails,
+        },
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!data.status) {
+      throw new Error(data.message || "Wallet payment failed.");
+    }
+
+    alert("Payment successful! Your order has been placed.");
+
+    window.location.href = "/order-history";
+  } catch (error: any) {
+    console.error("WALLET PAYMENT:", error);
+
+    alert(error.message || "Unable to pay with wallet.");
+  } finally {
+    setWalletPaying(false);
+  }
+}
 
    if (loading) {
   return (
@@ -435,6 +493,12 @@ export default function CheckoutPage() {
 
       <div className="bg-white rounded-3xl border border-sky-100 shadow-xl p-8">
 
+<p className="text-gray-600 font-semibold mb-4">
+  Wallet Balance:{" "}
+  <span className="text-sky-700 font-black">
+    ₦{walletBalance.toLocaleString()}
+  </span>
+</p>
 
         <button
           onClick={submitOrder}
@@ -448,6 +512,13 @@ export default function CheckoutPage() {
 
         </button>
 
+        <button
+          onClick={payWithWallet}
+          disabled={walletPaying || walletBalance < Number(service?.price ?? 0)}
+          className="w-full mt-4 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white text-lg font-bold py-4 rounded-2xl shadow-lg transition-all duration-300"
+        >
+          {walletPaying ? "Processing..." : "Pay with Wallet"}
+        </button>
 
         <p className="text-center text-gray-500 text-sm mt-5">
           🔒 Your payment is securely processed by Paystack.

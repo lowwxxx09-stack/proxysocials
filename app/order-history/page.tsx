@@ -167,55 +167,84 @@ export default function OrderHistory() {
 
                 </div>
 
-                {order.delivered_stock && (
+                {order.delivered_stock &&
+  Array.isArray(order.delivered_stock) &&
+  order.delivered_stock.length > 0 && (
 
-                  <div className="mt-10">
+    <div className="mt-10">
 
-                    <h3 className="text-2xl font-black text-green-400 mb-6">
-                      Delivered Product
-                    </h3>
+      <h3 className="text-2xl font-black text-green-400 mb-6">
+        Delivered Product
+      </h3>
 
-                    <div className="space-y-5">
+      <div className="space-y-8">
 
-                      {Object.entries(order.delivered_stock).map(
-                        ([key, value]) => (
+        {order.delivered_stock.map((stock: any, index: number) => (
 
-                          <div
-                            key={key}
-                            className="bg-black border border-zinc-800 rounded-2xl p-5 flex justify-between items-center gap-4"
-                          >
+          <div
+            key={stock.id || index}
+            className="bg-black border border-zinc-800 rounded-2xl p-6"
+          >
 
-                            <div>
+            <p className="text-gray-500 text-sm font-black mb-5">
+              PRODUCT #{index + 1}
+            </p>
 
-                              <p className="uppercase text-xs font-black text-gray-500">
-                                {key.replace(/_/g, " ")}
-                              </p>
+            <div className="space-y-4">
 
-                              <p className="font-bold mt-2 break-all">
-                                {String(value)}
-                              </p>
+              {[
+                ["Username", stock.username],
+                ["Password", stock.password],
+                ["Email", stock.email],
+                ["Recovery Email", stock.recovery_email],
+                ["2FA", stock.twofa],
+                ["License Key", stock.license_key],
+                ["Download Link", stock.download_link],
+              ]
+                .filter(([_, value]) => value !== null && value !== undefined && value !== "")
+                .map(([label, value]) => (
 
-                            </div>
+                  <div
+                    key={label}
+                    className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+                  >
 
-                            <button
-                              onClick={() =>
-                                navigator.clipboard.writeText(String(value))
-                              }
-                              className="bg-sky-600 hover:bg-sky-700 px-5 py-2 rounded-lg font-bold transition"
-                            >
-                              Copy
-                            </button>
+                    <div className="min-w-0">
 
-                          </div>
+                      <p className="text-xs font-black text-gray-500 uppercase">
+                        {label}
+                      </p>
 
-                        )
-                      )}
+                      <p className="font-bold text-white mt-2 break-all">
+                        {String(value)}
+                      </p>
 
                     </div>
 
+                    <button
+                      onClick={() =>
+                        navigator.clipboard.writeText(String(value))
+                      }
+                      className="bg-sky-600 hover:bg-sky-700 px-5 py-2 rounded-lg font-bold transition shrink-0"
+                    >
+                      Copy
+                    </button>
+
                   </div>
 
-                )}
+                ))}
+
+            </div>
+
+          </div>
+
+        ))}
+
+      </div>
+
+    </div>
+
+)}
 
               </div>
 
