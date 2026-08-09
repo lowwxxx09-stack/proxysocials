@@ -88,6 +88,18 @@ export default function CustomerMenu() {
   📦 Order History
 </Link>
 
+<Link
+  href="/payment-history"
+  onClick={closeMenu}
+  className={`block font-bold text-lg transition ${
+    pathname === "/payment-history"
+      ? "text-sky-400"
+      : "hover:text-sky-400"
+  }`}
+>
+  💳 Payment History
+</Link>
+
             <Link
   href="/profile"
   onClick={closeMenu}
