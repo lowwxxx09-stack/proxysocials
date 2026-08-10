@@ -96,105 +96,112 @@ export default function ServicesPage() {
   }
 
   function renderService(service: Service) {
-    return (
-      <div
-        key={service.id}
-        className="bg-white rounded-3xl border border-sky-100 shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden"
-      >
-        <div className="flex flex-col sm:flex-row items-stretch">
-          
-          {/* IMAGE */}
-          <div className="sm:w-56 w-full shrink-0">
-            {service.image ? (
-              <img
-                src={service.image}
-                alt={service.title}
-                className="w-full h-52 sm:h-full min-h-[220px] object-cover"
-              />
-            ) : (
-              <div className="w-full h-52 sm:h-full min-h-[220px] bg-sky-100 flex items-center justify-center text-sky-600 font-black text-xl">
-                ProxySocials
-              </div>
-            )}
-          </div>
+  return (
+    <div
+      key={service.id}
+      className="bg-white rounded-2xl sm:rounded-3xl border border-sky-100 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden"
+    >
+      <div className="flex flex-row items-stretch">
 
-          {/* CONTENT */}
-          <div className="flex-1 p-6 sm:p-7">
-            
-            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
-              
-              <div className="flex-1">
-                <span className="inline-block bg-sky-100 text-sky-700 text-xs font-black uppercase tracking-wide px-4 py-1.5 rounded-full">
-                  {service.category}
+        {/* IMAGE */}
+        <div className="w-24 sm:w-48 lg:w-56 shrink-0">
+          {service.image ? (
+            <img
+              src={service.image}
+              alt={service.title}
+              className="w-full h-full min-h-[150px] sm:min-h-[220px] object-cover"
+            />
+          ) : (
+            <div className="w-full h-full min-h-[150px] sm:min-h-[220px] bg-sky-100 flex items-center justify-center text-sky-600 font-black text-sm sm:text-xl">
+              ProxySocials
+            </div>
+          )}
+        </div>
+
+        {/* CONTENT */}
+        <div className="flex-1 p-3 sm:p-6 lg:p-7 min-w-0">
+
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3 sm:gap-5">
+
+            {/* SERVICE INFORMATION */}
+            <div className="flex-1 min-w-0">
+
+              <span className="inline-block bg-sky-100 text-sky-700 text-[9px] sm:text-xs font-black uppercase tracking-wide px-2.5 sm:px-4 py-1 rounded-full">
+                {service.category}
+              </span>
+
+              <h2 className="mt-2 sm:mt-3 text-base sm:text-2xl lg:text-3xl font-black text-gray-900 leading-tight">
+                {service.title}
+              </h2>
+
+              <p className="mt-2 sm:mt-3 text-xs sm:text-base text-gray-600 leading-5 sm:leading-6 line-clamp-3">
+                {service.description}
+              </p>
+
+              <p className="mt-2 sm:mt-4 text-[10px] sm:text-sm font-semibold text-gray-500">
+                🚚 Delivery:{" "}
+                <span className="text-gray-800">
+                  {service.delivery_time}
                 </span>
-
-                <h2 className="mt-3 text-2xl sm:text-3xl font-black text-gray-900">
-                  {service.title}
-                </h2>
-
-                <p className="mt-3 text-gray-600 leading-6">
-                  {service.description}
-                </p>
-
-                <p className="mt-4 text-sm font-semibold text-gray-500">
-                  🚚 Delivery:{" "}
-                  <span className="text-gray-800">
-                    {service.delivery_time}
-                  </span>
-                </p>
-              </div>
-
-              {/* PRICE + ORDER */}
-              <div className="lg:w-48 lg:text-right shrink-0">
-                <p className="text-sm font-semibold text-gray-500">
-                  Price
-                </p>
-
-                <p className="text-3xl font-black text-sky-700">
-                  ₦{Number(service.price).toLocaleString()}
-                </p>
-
-                <div className="mt-3">
-                  {service.available_stock > 20 ? (
-                    <p className="text-green-600 font-bold text-sm">
-                      🟢 {service.available_stock} Available
-                    </p>
-                  ) : service.available_stock > 5 ? (
-                    <p className="text-yellow-600 font-bold text-sm">
-                      🟡 {service.available_stock} Available
-                    </p>
-                  ) : service.available_stock > 0 ? (
-                    <p className="text-red-600 font-black text-sm">
-                      🔥 Only {service.available_stock} Left
-                    </p>
-                  ) : (
-                    <p className="text-gray-500 font-bold text-sm">
-                      ❌ Out of Stock
-                    </p>
-                  )}
-                </div>
-
-                <button
-                  onClick={() => orderService(service.id)}
-                  disabled={service.available_stock <= 0}
-                  className={`mt-5 w-full rounded-2xl py-3 font-black shadow-md transition-all ${
-                    service.available_stock > 0
-                      ? "bg-sky-600 hover:bg-sky-700 text-white hover:shadow-xl"
-                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  }`}
-                >
-                  {service.available_stock > 0
-                    ? "Order Now"
-                    : "Out of Stock"}
-                </button>
-              </div>
+              </p>
 
             </div>
+
+            {/* PRICE + ORDER */}
+            <div className="lg:w-44 xl:w-48 lg:text-right shrink-0">
+
+              <p className="text-[10px] sm:text-sm font-semibold text-gray-500">
+                Price
+              </p>
+
+              <p className="text-xl sm:text-3xl font-black text-sky-700">
+                ₦{Number(service.price).toLocaleString()}
+              </p>
+
+              <div className="mt-1 sm:mt-3">
+
+                {service.available_stock > 20 ? (
+                  <p className="text-green-600 font-bold text-[10px] sm:text-sm">
+                    🟢 {service.available_stock} Available
+                  </p>
+                ) : service.available_stock > 5 ? (
+                  <p className="text-yellow-600 font-bold text-[10px] sm:text-sm">
+                    🟡 {service.available_stock} Available
+                  </p>
+                ) : service.available_stock > 0 ? (
+                  <p className="text-red-600 font-black text-[10px] sm:text-sm">
+                    🔥 Only {service.available_stock} Left
+                  </p>
+                ) : (
+                  <p className="text-gray-500 font-bold text-[10px] sm:text-sm">
+                    ❌ Out of Stock
+                  </p>
+                )}
+
+              </div>
+
+              <button
+                onClick={() => orderService(service.id)}
+                disabled={service.available_stock <= 0}
+                className={`mt-2 sm:mt-5 w-full rounded-xl sm:rounded-2xl py-2 sm:py-3 text-xs sm:text-base font-black shadow-md transition-all ${
+                  service.available_stock > 0
+                    ? "bg-sky-600 hover:bg-sky-700 text-white hover:shadow-xl"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                }`}
+              >
+                {service.available_stock > 0
+                  ? "Order Now"
+                  : "Out of Stock"}
+              </button>
+
+            </div>
+
           </div>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   if (loading) {
     return (
