@@ -104,41 +104,41 @@ export default function ServicesPage() {
       <div className="flex flex-row items-stretch">
 
         {/* IMAGE */}
-        <div className="w-24 sm:w-48 lg:w-56 shrink-0">
+        <div className="w-24 sm:w-40 md:w-52 shrink-0">
           {service.image ? (
             <img
               src={service.image}
               alt={service.title}
-              className="w-full h-full min-h-[150px] sm:min-h-[220px] object-cover"
+              className="w-full h-full min-h-[150px] sm:min-h-[190px] object-cover"
             />
           ) : (
-            <div className="w-full h-full min-h-[150px] sm:min-h-[220px] bg-sky-100 flex items-center justify-center text-sky-600 font-black text-sm sm:text-xl">
+            <div className="w-full h-full min-h-[150px] bg-sky-100 flex items-center justify-center text-sky-600 font-black text-sm">
               ProxySocials
             </div>
           )}
         </div>
 
         {/* CONTENT */}
-        <div className="flex-1 p-3 sm:p-6 lg:p-7 min-w-0">
+        <div className="flex-1 p-3 sm:p-5 md:p-6 min-w-0">
 
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3 sm:gap-5">
+          <div className="flex flex-row justify-between gap-3">
 
-            {/* SERVICE INFORMATION */}
+            {/* SERVICE INFO */}
             <div className="flex-1 min-w-0">
 
-              <span className="inline-block bg-sky-100 text-sky-700 text-[9px] sm:text-xs font-black uppercase tracking-wide px-2.5 sm:px-4 py-1 rounded-full">
+              <span className="inline-block bg-sky-100 text-sky-700 text-[9px] sm:text-xs font-black uppercase tracking-wide px-2 sm:px-3 py-1 rounded-full">
                 {service.category}
               </span>
 
-              <h2 className="mt-2 sm:mt-3 text-base sm:text-2xl lg:text-3xl font-black text-gray-900 leading-tight">
+              <h2 className="mt-2 text-base sm:text-xl md:text-2xl font-black text-gray-900 leading-tight">
                 {service.title}
               </h2>
 
-              <p className="mt-2 sm:mt-3 text-xs sm:text-base text-gray-600 leading-5 sm:leading-6 line-clamp-3">
+              <p className="mt-2 text-xs sm:text-sm text-gray-600 leading-5 line-clamp-3">
                 {service.description}
               </p>
 
-              <p className="mt-2 sm:mt-4 text-[10px] sm:text-sm font-semibold text-gray-500">
+              <p className="mt-3 text-[10px] sm:text-sm font-semibold text-gray-500">
                 🚚 Delivery:{" "}
                 <span className="text-gray-800">
                   {service.delivery_time}
@@ -148,17 +148,17 @@ export default function ServicesPage() {
             </div>
 
             {/* PRICE + ORDER */}
-            <div className="lg:w-44 xl:w-48 lg:text-right shrink-0">
+            <div className="w-24 sm:w-36 md:w-44 shrink-0 text-right">
 
               <p className="text-[10px] sm:text-sm font-semibold text-gray-500">
                 Price
               </p>
 
-              <p className="text-xl sm:text-3xl font-black text-sky-700">
+              <p className="text-lg sm:text-2xl md:text-3xl font-black text-sky-700">
                 ₦{Number(service.price).toLocaleString()}
               </p>
 
-              <div className="mt-1 sm:mt-3">
+              <div className="mt-2">
 
                 {service.available_stock > 20 ? (
                   <p className="text-green-600 font-bold text-[10px] sm:text-sm">
@@ -183,7 +183,7 @@ export default function ServicesPage() {
               <button
                 onClick={() => orderService(service.id)}
                 disabled={service.available_stock <= 0}
-                className={`mt-2 sm:mt-5 w-full rounded-xl sm:rounded-2xl py-2 sm:py-3 text-xs sm:text-base font-black shadow-md transition-all ${
+                className={`mt-3 w-full rounded-xl sm:rounded-2xl py-2 sm:py-3 text-xs sm:text-sm font-black shadow-md transition-all ${
                   service.available_stock > 0
                     ? "bg-sky-600 hover:bg-sky-700 text-white hover:shadow-xl"
                     : "bg-gray-300 text-gray-500 cursor-not-allowed"
@@ -197,12 +197,12 @@ export default function ServicesPage() {
             </div>
 
           </div>
+
         </div>
       </div>
     </div>
   );
 }
-
   if (loading) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-sky-50">
