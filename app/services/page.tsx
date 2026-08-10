@@ -28,6 +28,7 @@ const categories = [
   { label: "🐦 X", value: "X", id: "x" },
   { label: "🎬 Streaming", value: "STREAMING", id: "streaming" },
   { label: "🔥 Proxy Special", value: "PROXY SPECIAL", id: "proxy-special" },
+  { label: "💬 Texting", value: "TEXTING", id: "texting" },
   { label: "🌐 VPN", value: "VPN", id: "vpn" },
 ];
 
