@@ -18,6 +18,7 @@ type Service = {
 
 const categories = [
   { label: "🔥 All", value: "ALL", id: "all" },
+  { label: "🔥 Proxy Special", value: "PROXY SPECIAL", id: "proxy-special" },
   { label: "📘 Facebook", value: "FACEBOOK", id: "facebook" },
   {
     label: "💕 Facebook Dating",
@@ -27,8 +28,7 @@ const categories = [
   { label: "🎵 TikTok", value: "TIKTOK", id: "tiktok" },
   { label: "🐦 X", value: "X", id: "x" },
   { label: "🎬 Streaming", value: "STREAMING", id: "streaming" },
-  { label: "🔥 Proxy Special", value: "PROXY SPECIAL", id: "proxy-special" },
-  { label: "💬 Texting", value: "TEXTING", id: "texting" },
+   { label: "💬 Texting", value: "TEXTING", id: "texting" },
   { label: "🌐 VPN", value: "VPN", id: "vpn" },
 ];
 
@@ -205,14 +205,22 @@ export default function ServicesPage() {
   );
 }
   if (loading) {
-    return (
-      <main className="min-h-screen flex items-center justify-center bg-sky-50">
-        <h1 className="text-2xl font-bold text-sky-700">
-          Loading Services...
+  return (
+    <main className="min-h-screen bg-gradient-to-b from-sky-50 to-white flex items-center justify-center px-6">
+      <div className="text-center">
+        <div className="mx-auto mb-6 h-14 w-14 rounded-full border-4 border-sky-200 border-t-sky-600 animate-spin" />
+
+        <h1 className="text-2xl font-black text-sky-700">
+          ProxySocials
         </h1>
-      </main>
-    );
-  }
+
+        <p className="mt-2 text-gray-500 font-medium">
+          Preparing your services...
+        </p>
+      </div>
+    </main>
+  );
+}
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-sky-50 to-white py-14 px-4 sm:px-6">

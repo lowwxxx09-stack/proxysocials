@@ -76,6 +76,18 @@ export default function CustomerMenu() {
   🛒 Services
 </Link>
 
+<Link
+  href="/fund-wallet"
+  onClick={closeMenu}
+  className={`block font-bold text-lg transition ${
+    pathname === "/fund-wallet"
+      ? "text-sky-400"
+      : "hover:text-sky-400"
+  }`}
+>
+  💰 Fund Wallet
+</Link>
+
             <Link
   href="/order-history"
   onClick={closeMenu}
@@ -112,17 +124,7 @@ export default function CustomerMenu() {
   👤 My Profile
 </Link>
 
-<Link
-  href="/fund-wallet"
-  onClick={closeMenu}
-  className={`block font-bold text-lg transition ${
-    pathname === "/fund-wallet"
-      ? "text-sky-400"
-      : "hover:text-sky-400"
-  }`}
->
-  💰 Fund Wallet
-</Link>
+
 
 <Link
   href="/support"

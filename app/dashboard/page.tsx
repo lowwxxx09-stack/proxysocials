@@ -96,10 +96,26 @@ setLoading(false);
 
 if (loading) {
   return (
-    <main className="min-h-screen bg-sky-50 flex items-center justify-center">  
-    <p className="text-sky-700 font-bold text-xl">
-        Loading Dashboard...
-      </p>
+    <main className="min-h-screen flex items-center justify-center bg-sky-50 px-6">
+      <div className="text-center">
+        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-sky-600 shadow-lg">
+          <span className="text-3xl font-black text-white">P</span>
+        </div>
+
+        <h1 className="text-3xl font-black text-sky-700">
+          ProxySocials
+        </h1>
+
+        <p className="mt-2 text-gray-500 font-medium">
+          Preparing your dashboard
+        </p>
+
+        <div className="mt-5 flex justify-center gap-2">
+          <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-sky-600 [animation-delay:-0.3s]" />
+          <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-sky-600 [animation-delay:-0.15s]" />
+          <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-sky-600" />
+        </div>
+      </div>
     </main>
   );
 }

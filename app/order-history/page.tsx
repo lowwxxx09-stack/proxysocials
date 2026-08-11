@@ -50,14 +50,22 @@ export default function OrderHistory() {
   }
 
   if (loading) {
-    return (
-      <main className="min-h-screen bg-black flex items-center justify-center">
-        <p className="text-2xl font-black text-white">
-          Loading Orders...
+  return (
+    <main className="min-h-screen bg-black flex items-center justify-center px-6">
+      <div className="text-center">
+        <div className="mx-auto mb-6 h-14 w-14 rounded-full border-4 border-zinc-700 border-t-sky-500 animate-spin" />
+
+        <h1 className="text-2xl font-black text-sky-400">
+          ProxySocials
+        </h1>
+
+        <p className="mt-2 text-gray-400 font-medium">
+          Preparing your order history...
         </p>
-      </main>
-    );
-  }
+      </div>
+    </main>
+  );
+}
 
   return (
     <main className="min-h-screen bg-black text-white py-10 px-6">
