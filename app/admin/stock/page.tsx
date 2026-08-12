@@ -115,9 +115,9 @@ loadData();
           Stock Manager
         </h1>
 
-        <p className="text-gray-600 mb-8">
-          Upload and manage service inventory.
-        </p>
+        <p className="text-black font-bold mb-8">
+  Upload and manage service inventory.
+</p>
 
         <div className="grid lg:grid-cols-2 gap-8">
 
@@ -135,7 +135,7 @@ loadData();
                 <button
                   key={service.id}
                   onClick={() => setSelectedService(service)}
-                  className={`w-full text-left rounded-lg border p-3 ${
+                  className={`w-full text-left rounded-lg border p-3 font-bold text-black ${
                     selectedService?.id === service.id
                       ? "bg-sky-600 text-white"
                       : "bg-white hover:bg-sky-50"
@@ -184,9 +184,9 @@ mary456,password456,XYZ987,mary@gmail.com,recovery2@gmail.com`}
                 </button>
               </>
             ) : (
-              <p className="text-gray-500">
-                Select a service first.
-              </p>
+              <p className="text-black font-bold">
+  Select a service first.
+</p>
             )}
 
           </div>
@@ -224,9 +224,9 @@ mary456,password456,XYZ987,mary@gmail.com,recovery2@gmail.com`}
                     {service.category}
                   </p>
 
-                  <p className="mt-6 text-gray-500">
-                    Available Stock
-                  </p>
+                  <p className="mt-6 text-black font-bold">
+  Available Stock
+</p>
 
                   <h2 className="text-5xl font-extrabold text-sky-700">
                     {availableStock}

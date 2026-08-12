@@ -86,10 +86,7 @@ if (orderError) {
 setLoading(false);
   }
 
-  async function logout() {
-    await supabase.auth.signOut();
-    router.push("/login");
-  }
+  
 
   
 
@@ -159,12 +156,7 @@ if (loading) {
 
 </div>
 
-<button
-  onClick={logout}
-          className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-2xl font-bold transition"
-        >
-          Logout
-        </button>
+
 
 
       </div>
