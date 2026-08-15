@@ -131,9 +131,9 @@ if (loading) {
 
         <div>
 
-          <h1 className="text-4xl md:text-5xl font-black text-sky-700">
-            Welcome, {profile?.full_name || "User"} 👋
-          </h1>
+          <h1 className="text-2xl sm:text-3xl md:text-5xl leading-tight font-black text-sky-700">
+  Welcome, {profile?.full_name || "User"} 👋
+</h1>
 
 
           <p className="mt-3 text-gray-600 text-lg">
