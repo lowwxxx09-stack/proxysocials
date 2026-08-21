@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-
+import { sendTelegramMessage } from "@/lib/telegram";
 
 
 export async function POST(request: NextRequest) {
@@ -176,6 +176,30 @@ await supabase
 if (updateError) {
   console.error(updateError);
 }
+
+try {
+  const { data: serviceData } = await supabase
+    .from("services")
+    .select("title, category")
+    .eq("id", metadata.serviceId)
+    .single();
+
+  const telegramMessage =
+  "🛒 NEW PROXYSOCIALS ORDER\n\n" +
+  "👤 Customer: " + (metadata.customerName || "Unknown") + "\n" +
+  "📱 WhatsApp: " + (metadata.whatsappNumber || "Unknown") + "\n\n" +
+  "🛍️ Service: " + (serviceData?.title || "Unknown") + "\n" +
+  "🔢 Quantity: " + (orderContent?.quantity || "Not provided") + "\n" +
+  "💰 Amount: ₦" + Number(verifyData.data.amount / 100).toLocaleString() + "\n" +
+  "💳 Payment: Paystack\n" +
+  "📦 Status: ✅ COMPLETED\n\n" +
+  "🔗 Order ID: " + reference;
+
+await sendTelegramMessage(telegramMessage);
+} catch (telegramError) {
+  console.error("Telegram notification error:", telegramError);
+}
+
   return NextResponse.json({
     status: true,
     message: "Order created successfully.",

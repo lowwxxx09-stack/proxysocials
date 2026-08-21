@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { sendTelegramMessage } from "@/lib/telegram";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -108,6 +109,31 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+try {
+  const { data: serviceData } = await supabase
+    .from("services")
+    .select("title, category")
+    .eq("id", serviceId)
+    .single();
+
+  const telegramMessage =
+  "🛒 NEW PROXYSOCIALS ORDER\n\n" +
+  "👤 Customer: " + customerName + "\n" +
+  "📱 WhatsApp: " + whatsappNumber + "\n\n" +
+  "🛍️ Service: " + (serviceData?.title || "Unknown") + "\n" +
+  "🔢 Quantity: " + (orderContent?.quantity || "Not provided") + "\n" +
+  "💰 Amount: ₦" + Number(servicePrice * quantity).toLocaleString() + "\n" +
+  "💳 Payment: Wallet\n" +
+  "📦 Status: ✅ COMPLETED\n\n" +
+  "🔗 Order ID: " + data.order_id;
+
+  console.log("ABOUT TO SEND WALLET TELEGRAM NOTIFICATION");
+
+  await sendTelegramMessage(telegramMessage);
+} catch (telegramError) {
+  console.error("WALLET TELEGRAM ERROR:", telegramError);
+}
 
     return NextResponse.json({
       status: true,

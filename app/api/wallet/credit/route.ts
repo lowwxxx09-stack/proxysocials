@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-
+import { sendTelegramMessage } from "@/lib/telegram";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SECRET_KEY!
@@ -123,6 +123,30 @@ if (transactionError) {
     },
     { status: 500 }
   );
+}
+
+try {
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("full_name, phone")
+    .eq("id", userId)
+    .single();
+
+  const telegramMessage =
+  "💰 NEW PROXYSOCIALS DEPOSIT\n\n" +
+  "👤 Customer: " + (profile?.full_name || "Unknown") + "\n" +
+  "📱 WhatsApp: " + (profile?.phone || "Unknown") + "\n\n" +
+  "💵 Amount: ₦" + Number(amount).toLocaleString() + "\n" +
+  "💳 Payment: Paystack\n" +
+  "🔖 Reference: " + reference + "\n" +
+  "💰 New Balance: ₦" + Number(newBalance).toLocaleString() + "\n" +
+  "📦 Status: ✅ CREDITED";
+
+  console.log("ABOUT TO SEND DEPOSIT TELEGRAM NOTIFICATION");
+
+  await sendTelegramMessage(telegramMessage);
+} catch (telegramError) {
+  console.error("DEPOSIT TELEGRAM ERROR:", telegramError);
 }
 
     return NextResponse.json({
