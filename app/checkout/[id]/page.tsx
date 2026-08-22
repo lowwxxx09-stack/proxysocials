@@ -366,7 +366,7 @@ async function payWithWallet() {
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
               placeholder="Enter your full name"
-              className="w-full rounded-2xl border border-gray-300 p-4 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="w-full rounded-2xl border border-gray-300 p-4 text-black focus:outline-none focus:ring-2 focus:ring-sky-500"
             />
 
           </div>
@@ -384,7 +384,7 @@ async function payWithWallet() {
               value={whatsappNumber}
               onChange={(e) => setWhatsappNumber(e.target.value)}
               placeholder="+234..."
-              className="w-full rounded-2xl border border-gray-300 p-4 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="w-full rounded-2xl border border-gray-300 p-4 text-black focus:outline-none focus:ring-2 focus:ring-sky-500"
             />
 
           </div>
@@ -402,7 +402,7 @@ async function payWithWallet() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="example@email.com"
-              className="w-full rounded-2xl border border-gray-300 p-4 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="w-full rounded-2xl border border-gray-300 p-4 text-black focus:outline-none focus:ring-2 focus:ring-sky-500"
             />
 
           </div>
@@ -441,7 +441,7 @@ async function payWithWallet() {
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
               placeholder="e.g. 1000 Followers"
-              className="w-full rounded-2xl border border-gray-300 p-4 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="w-full rounded-2xl border border-gray-300 p-4 text-black focus:outline-none focus:ring-2 focus:ring-sky-500"
             />
 
           </div>
@@ -459,7 +459,7 @@ async function payWithWallet() {
               value={accountLink}
               onChange={(e) => setAccountLink(e.target.value)}
               placeholder="Paste your account or post link"
-              className="w-full rounded-2xl border border-gray-300 p-4 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="w-full rounded-2xl border border-gray-300 p-4 text-black focus:outline-none focus:ring-2 focus:ring-sky-500"
             />
 
           </div>
@@ -476,7 +476,7 @@ async function payWithWallet() {
               value={customDetails}
               onChange={(e) => setCustomDetails(e.target.value)}
               placeholder="Any additional instructions..."
-              className="w-full rounded-2xl border border-gray-300 p-4 h-32 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="w-full rounded-2xl border border-gray-300 p-4 text-black focus:outline-none focus:ring-2 focus:ring-sky-500"
             />
 
           </div>
