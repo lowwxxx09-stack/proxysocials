@@ -96,11 +96,14 @@ export default function ServicesPage() {
     );
   }
 
-  function renderService(service: Service) {
+  function renderService(service: Service, index: number) {
   return (
     <div
       key={service.id}
-      className="bg-white rounded-2xl sm:rounded-3xl border border-sky-100 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden"
+      className="service-card bg-white rounded-2xl sm:rounded-3xl border border-sky-100 shadow-md hover:-translate-y-1 hover:shadow-xl transition-all duration-300 overflow-hidden"
+      style={{
+        animationDelay: `${Math.min(index * 0.08, 0.5)}s,`
+      }}
     >
       <div className="flex flex-row items-stretch">
 
@@ -229,7 +232,7 @@ export default function ServicesPage() {
       <div className="max-w-7xl mx-auto">
 
         {/* HEADER */}
-        <div className="text-center mb-10">
+        <div className="services-fade-down text-center mb-10">
           <h1 className="text-4xl sm:text-5xl font-black text-sky-700">
             ProxySocials Marketplace
           </h1>
@@ -241,7 +244,7 @@ export default function ServicesPage() {
         </div>
 
         {/* SEARCH */}
-        <div className="max-w-xl mx-auto mb-8">
+        <div className="services-fade-up services-delay-200 max-w-xl mx-auto mb-8">
           <input
             type="text"
             placeholder="Search Facebook, TikTok, VPN..."
@@ -252,7 +255,7 @@ export default function ServicesPage() {
         </div>
 
         {/* CATEGORY BUTTONS */}
-        <div className="flex gap-3 overflow-x-auto pb-4 mb-10 scrollbar-hide">
+        <div className="services-fade-up services-delay-300 flex gap-3 overflow-x-auto pb-4 mb-10 scrollbar-hide">
           {categories.map((category) => (
             <button
               key={category.value}
@@ -326,7 +329,9 @@ export default function ServicesPage() {
 
                     {/* SERVICES DIRECTLY UNDER CATEGORY */}
                     <div className="space-y-5">
-                      {categoryServices.map(renderService)}
+                      {categoryServices.map((service, index) =>
+  renderService(service, index)
+)}
                     </div>
                   </section>
                 );

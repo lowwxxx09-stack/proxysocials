@@ -166,3 +166,95 @@ body {
     animation: none;
   }
 }
+
+/* ProxySocials Services Animations */
+
+@keyframes servicesFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(25px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes servicesFadeDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.services-fade-up {
+  opacity: 0;
+  animation: servicesFadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.services-fade-down {
+  opacity: 0;
+  animation: servicesFadeDown 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.services-delay-100 {
+  animation-delay: 0.1s;
+}
+
+.services-delay-200 {
+  animation-delay: 0.2s;
+}
+
+.services-delay-300 {
+  animation-delay: 0.3s;
+}
+
+.services-delay-400 {
+  animation-delay: 0.4s;
+}
+
+.services-delay-500 {
+  animation-delay: 0.5s;
+}
+
+/* Service card entrance */
+
+.service-card {
+  opacity: 0;
+  animation: servicesFadeUp 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Service image hover */
+
+.service-card img {
+  transition: transform 0.5s ease;
+}
+
+.service-card:hover img {
+  transform: scale(1.04);
+}
+
+/* Accessibility */
+
+@media (prefers-reduced-motion: reduce) {
+  .services-fade-up,
+  .services-fade-down,
+  .service-card {
+    opacity: 1;
+    animation: none;
+  }
+
+  .service-card img {
+    transition: none;
+  }
+
+  .service-card:hover img {
+    transform: none;
+  }
+}
