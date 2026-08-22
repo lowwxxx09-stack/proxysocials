@@ -258,3 +258,122 @@ body {
     transform: none;
   }
 }
+
+/* LOGIN PAGE ANIMATIONS */
+
+@keyframes loginCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes loginFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes loginFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+.login-card {
+  animation: loginCardIn 0.7s ease-out both;
+}
+
+.login-icon {
+  animation: loginFadeUp 0.6s ease-out 0.15s both,
+    loginFloat 4s ease-in-out 1s infinite;
+}
+
+.login-title {
+  animation: loginFadeUp 0.6s ease-out 0.25s both;
+}
+
+.login-subtitle {
+  animation: loginFadeUp 0.6s ease-out 0.35s both;
+}
+
+.login-field {
+  animation: loginFadeUp 0.6s ease-out 0.4s both;
+}
+
+.login-delay-1 {
+  animation: loginFadeUp 0.6s ease-out 0.5s both;
+}
+
+.login-button-wrapper {
+  animation: loginFadeUp 0.6s ease-out 0.6s both;
+}
+
+.login-footer {
+  animation: loginFadeUp 0.6s ease-out 0.7s both;
+}
+
+.login-glow {
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  border-radius: 9999px;
+  background: rgba(14, 165, 233, 0.12);
+  filter: blur(60px);
+  animation: loginFloat 6s ease-in-out infinite;
+}
+
+.login-glow-one {
+  top: 10%;
+  left: 10%;
+}
+
+.login-glow-two {
+  right: 10%;
+  bottom: 10%;
+  animation-delay: 2s;
+}
+
+/* ================================
+   DASHBOARD ANIMATIONS
+================================ */
+
+@keyframes dashboardFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(25px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dashboard-fade-up {
+  animation: dashboardFadeUp 0.7s ease-out both;
+}
+
+.dashboard-delay-1 {
+  animation-delay: 0.15s;
+}
+
+.dashboard-delay-2 {
+  animation-delay: 0.3s;
+}

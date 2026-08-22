@@ -29,10 +29,11 @@ export default function Login() {
 
     const supabase = createClient();
 
-const { error } = await supabase.auth.signInWithPassword({
-  email,
-  password,
-});
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
     setLoading(false);
 
     if (error) {
@@ -44,30 +45,46 @@ const { error } = await supabase.auth.signInWithPassword({
   }
 
   return (
-    <main className="min-h-screen bg-sky-50 flex items-center justify-center px-6">
+    <main className="relative min-h-screen overflow-hidden bg-gradient-to-b from-sky-50 to-white flex items-center justify-center px-6 py-12">
 
-      <div className="bg-white w-full max-w-md p-8 rounded-2xl shadow-lg">
+      {/* BACKGROUND GLOW */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="login-glow login-glow-one" />
+        <div className="login-glow login-glow-two" />
+      </div>
 
-        <h1 className="text-3xl font-extrabold text-sky-700 text-center">
+      {/* LOGIN CARD */}
+      <div className="login-card relative z-10 bg-white w-full max-w-md p-8 rounded-3xl border border-sky-100 shadow-xl">
+
+        {/* LOGO / ICON */}
+        <div className="login-icon mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-sky-100 text-3xl shadow-sm">
+          🚀
+        </div>
+
+        {/* TITLE */}
+        <h1 className="login-title mt-6 text-3xl font-extrabold text-sky-700 text-center">
           Welcome Back
         </h1>
 
-        <p className="text-gray-600 text-center mt-3">
+        <p className="login-subtitle text-gray-600 text-center mt-3">
           Login to your ProxySocials account
         </p>
 
+        {/* ERROR */}
         {error && (
-          <div className="mt-4 rounded-lg bg-red-100 p-3 text-red-700">
+          <div className="mt-4 rounded-xl bg-red-100 p-3 text-red-700 animate-[fadeIn_0.3s_ease-out]">
             {error}
           </div>
         )}
 
+        {/* FORM */}
         <form
           onSubmit={handleLogin}
           className="mt-8 space-y-5"
         >
 
-          <div>
+          {/* EMAIL */}
+          <div className="login-field">
             <label className="block text-gray-700 font-semibold mb-2">
               Email
             </label>
@@ -77,12 +94,12 @@ const { error } = await supabase.auth.signInWithPassword({
               placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:border-sky-600"
+              className="w-full border border-gray-300 rounded-xl px-4 py-3 transition-all duration-300 focus:outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100 focus:-translate-y-0.5"
             />
           </div>
 
-
-          <div>
+          {/* PASSWORD */}
+          <div className="login-field login-delay-1">
             <label className="block text-gray-700 font-semibold mb-2">
               Password
             </label>
@@ -92,27 +109,29 @@ const { error } = await supabase.auth.signInWithPassword({
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:border-sky-600"
+              className="w-full border border-gray-300 rounded-xl px-4 py-3 transition-all duration-300 focus:outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100 focus:-translate-y-0.5"
             />
           </div>
 
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-sky-600 text-white py-3 rounded-xl font-bold hover:bg-sky-700 transition disabled:opacity-50"
-          >
-            {loading ? "Logging in..." : "Login"}
-          </button>
+          {/* BUTTON */}
+          <div className="login-button-wrapper login-delay-2">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-sky-600 text-white py-3 rounded-xl font-bold shadow-md hover:bg-sky-700 hover:-translate-y-1 hover:shadow-lg active:translate-y-0 transition-all duration-300 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-md"
+            >
+              {loading ? "Logging in..." : "Login"}
+            </button>
+          </div>
 
         </form>
 
-
-        <p className="text-center text-gray-600 mt-6">
+        {/* SIGNUP */}
+        <p className="login-footer text-center text-gray-600 mt-6">
           Don’t have an account?{" "}
           <a
             href="/signup"
-            className="text-sky-700 font-bold"
+            className="text-sky-700 font-bold transition-colors duration-200 hover:text-sky-900"
           >
             Sign Up
           </a>

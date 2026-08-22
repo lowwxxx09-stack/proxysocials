@@ -126,7 +126,7 @@ if (loading) {
 
       {/* Dashboard Header */}
 
-      <div className="bg-white rounded-3xl border border-sky-100 shadow-xl p-8 flex flex-col md:flex-row justify-between gap-6">
+      <div className="dashboard-fade-up bg-white rounded-3xl border border-sky-100 shadow-xl p-8 flex flex-col md:flex-row justify-between gap-6">
 
 
         <div>
