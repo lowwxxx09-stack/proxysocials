@@ -7,78 +7,104 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <nav className="sticky top-0 z-[9999] bg-white shadow-sm">
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-4">
+    <nav className="sticky top-0 z-[9999] bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
+      <div className="max-w-7xl mx-auto flex items-center justify-between px-5 sm:px-6 py-4">
 
-        {/* Logo */}
+        {/* LOGO */}
         <Link
           href="/"
-          className="text-2xl font-extrabold text-sky-700"
+          className="group flex items-center"
         >
-          ProxySocials
+          <span className="text-2xl sm:text-3xl font-black tracking-tight text-gray-900">
+            Proxy
+          </span>
+
+          <span className="text-2xl sm:text-3xl font-black tracking-tight text-sky-600">
+            Socials
+          </span>
         </Link>
 
-    
 
-        {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-8">
+        {/* DESKTOP NAVIGATION */}
+        <div className="hidden md:flex items-center gap-7">
 
-          <a href="#services" className="text-gray-700 hover:text-sky-700">
+          <a
+            href="#services"
+            className="relative text-sm font-semibold text-gray-600 transition-colors duration-200 hover:text-sky-600"
+          >
             Services
           </a>
 
-          <a href="#how-it-works" className="text-gray-700 hover:text-sky-700">
+          <a
+            href="#how-it-works"
+            className="text-sm font-semibold text-gray-600 transition-colors duration-200 hover:text-sky-600"
+          >
             How It Works
           </a>
 
-          <a href="#faq" className="text-gray-700 hover:text-sky-700">
+          <a
+            href="#faq"
+            className="text-sm font-semibold text-gray-600 transition-colors duration-200 hover:text-sky-600"
+          >
             FAQ
           </a>
 
+
+          {/* WHATSAPP */}
           <a
             href="https://wa.me/2348161250950"
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-green-500 text-white px-5 py-2 rounded-xl font-semibold hover:bg-green-600 transition"
+            className="px-4 py-2.5 rounded-xl bg-green-500 text-white text-sm font-bold shadow-sm hover:bg-green-600 hover:-translate-y-0.5 transition-all duration-200"
           >
             WhatsApp
           </a>
 
+
+          {/* LOGIN */}
           <Link
             href="/login"
-            className="border-2 border-sky-600 text-sky-700 px-5 py-2 rounded-xl font-semibold hover:bg-sky-600 hover:text-white transition"
+            className="px-5 py-2.5 rounded-xl border border-sky-600 text-sky-700 text-sm font-bold hover:bg-sky-50 hover:-translate-y-0.5 transition-all duration-200"
           >
             Login
           </Link>
 
+
+          {/* SIGN UP */}
           <Link
             href="/signup"
-            className="bg-sky-600 text-white px-5 py-2 rounded-xl font-semibold hover:bg-sky-700 transition"
+            className="px-5 py-2.5 rounded-xl bg-sky-600 text-white text-sm font-bold shadow-md hover:bg-sky-700 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200"
           >
-            Sign Up
+            Get Started
           </Link>
 
         </div>
 
-        {/* Mobile Menu Button */}
+
+        {/* MOBILE MENU BUTTON */}
         <button
-  onClick={() => setOpen(!open)}
-  className="md:hidden text-sky-700 text-3xl"
->
-  ☰
-</button>
+          onClick={() => setOpen(!open)}
+          aria-label="Toggle menu"
+          className="md:hidden flex items-center justify-center w-11 h-11 rounded-xl text-gray-700 hover:bg-sky-50 hover:text-sky-600 transition"
+        >
+          <span className="text-2xl">
+            {open ? "✕" : "☰"}
+          </span>
+        </button>
+
       </div>
 
-      {/* Mobile Menu */}
-      {open && (
-        <div className="absolute top-full left-0 w-full bg-white shadow-lg border-t z-50 md:hidden">
 
-          <div className="flex flex-col p-4 gap-4">
+      {/* MOBILE MENU */}
+      {open && (
+        <div className="absolute top-full left-0 w-full bg-white border-t border-gray-100 shadow-xl md:hidden">
+
+          <div className="flex flex-col p-5 gap-3">
 
             <a
               href="#services"
               onClick={() => setOpen(false)}
-              className="text-gray-700"
+              className="px-4 py-3 rounded-xl text-gray-700 font-semibold hover:bg-sky-50 hover:text-sky-600 transition"
             >
               Services
             </a>
@@ -86,7 +112,7 @@ export default function Navbar() {
             <a
               href="#how-it-works"
               onClick={() => setOpen(false)}
-              className="text-gray-700"
+              className="px-4 py-3 rounded-xl text-gray-700 font-semibold hover:bg-sky-50 hover:text-sky-600 transition"
             >
               How It Works
             </a>
@@ -94,39 +120,48 @@ export default function Navbar() {
             <a
               href="#faq"
               onClick={() => setOpen(false)}
-              className="text-gray-700"
+              className="px-4 py-3 rounded-xl text-gray-700 font-semibold hover:bg-sky-50 hover:text-sky-600 transition"
             >
               FAQ
             </a>
 
+
+            {/* WHATSAPP */}
             <a
               href="https://wa.me/2348161250950"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-green-500 text-white text-center py-3 rounded-xl font-semibold"
+              onClick={() => setOpen(false)}
+              className="bg-green-500 text-white text-center py-3 rounded-xl font-bold hover:bg-green-600 transition"
             >
               WhatsApp
             </a>
 
+
+            {/* LOGIN */}
             <Link
               href="/login"
               onClick={() => setOpen(false)}
-              className="border-2 border-sky-600 text-sky-700 text-center py-3 rounded-xl font-semibold"
+              className="border border-sky-600 text-sky-700 text-center py-3 rounded-xl font-bold hover:bg-sky-50 transition"
             >
               Login
             </Link>
 
+
+            {/* GET STARTED */}
             <Link
               href="/signup"
               onClick={() => setOpen(false)}
-              className="bg-sky-600 text-white text-center py-3 rounded-xl font-semibold"
+              className="bg-sky-600 text-white text-center py-3 rounded-xl font-bold hover:bg-sky-700 transition shadow-md"
             >
-              Sign Up
+              Get Started
             </Link>
 
           </div>
+
         </div>
       )}
+
     </nav>
   );
 }
