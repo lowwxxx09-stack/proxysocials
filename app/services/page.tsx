@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import CustomerMenu from "@/components/CustomerMenu";
+import PromoCarousel from "@/components/PromoCarousel";
 
 type Service = {
   id: string;
@@ -242,6 +243,9 @@ export default function ServicesPage() {
             gift cards and digital products instantly.
           </p>
         </div>
+
+        {/* PROMOTIONAL CAROUSEL */}
+        <PromoCarousel />
 
         {/* SEARCH */}
         <div className="services-fade-up services-delay-200 max-w-xl mx-auto mb-8">
