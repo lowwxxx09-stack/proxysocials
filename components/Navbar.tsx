@@ -13,14 +13,65 @@ export default function Navbar() {
         {/* LOGO */}
         <Link
           href="/"
-          className="group flex items-center"
+          className="group flex items-center gap-2"
         >
-          <span className="text-2xl sm:text-3xl font-black tracking-tight text-gray-900">
-            Proxy
-          </span>
+          {/* ProxySocials P LOGO */}
+          <svg
+            width="48"
+            height="48"
+            viewBox="0 0 48 48"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="shrink-0"
+            aria-label="ProxySocials logo"
+          >
+            {/* Main P shape */}
+            <path
+              d="M11 7.5C8.8 7.5 7 9.3 7 11.5V36.5C7 38.7 8.8 40.5 11 40.5C13.2 40.5 15 38.7 15 36.5V29H25.5C32.7 29 38.5 24.2 38.5 18C38.5 11.8 32.7 7.5 25.5 7.5H11Z"
+              fill="#1476E8"
+            />
 
-          <span className="text-2xl sm:text-3xl font-black tracking-tight text-sky-600">
-            Socials
+            {/* Inner cutout */}
+            <path
+              d="M15 14.5H24.5C27.8 14.5 30.5 15.8 30.5 18C30.5 20.2 27.8 22 24.5 22H15V14.5Z"
+              fill="white"
+            />
+
+            {/* Speed lines */}
+            <path
+              d="M4 15H12"
+              stroke="#1476E8"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+
+            <path
+              d="M3 21H11"
+              stroke="#1476E8"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+
+            <path
+              d="M4 27H11"
+              stroke="#1476E8"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+
+            {/* Forward arrow / motion accent */}
+            <path
+              d="M27 31L37 31L33 35"
+              stroke="#1476E8"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+
+          {/* BRAND NAME */}
+          <span className="text-2xl sm:text-3xl font-black tracking-tight text-gray-900">
+            Proxy<span className="text-sky-600">Socials</span>
           </span>
         </Link>
 
