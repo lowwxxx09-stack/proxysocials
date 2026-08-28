@@ -42,8 +42,14 @@ export default function ServicesPage() {
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
+  fetchServices();
+
+  const interval = setInterval(() => {
     fetchServices();
-  }, []);
+  }, 10000);
+
+  return () => clearInterval(interval);
+}, []);
 
   async function fetchServices() {
     const { data, error } = await supabase
