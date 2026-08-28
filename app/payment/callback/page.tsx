@@ -70,13 +70,13 @@ if (
   }
 
   setMessage(
-    "Payment successful! Order created 🎉"
-  );
+  "Payment successful! Order created 🎉 Redirecting to your orders..."
+);
 
-  setTimeout(() => {
-    router.push("/dashboard");
-    router.refresh();
-  }, 2000);
+setTimeout(() => {
+  router.push("/order-history");
+  router.refresh();
+}, 2000);
 
 } else if (paymentType === "wallet") {
   const walletResponse = await fetch(
