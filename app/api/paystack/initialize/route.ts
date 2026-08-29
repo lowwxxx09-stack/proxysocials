@@ -24,17 +24,35 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-console.log("METADATA BEING SENT:");
-console.log({
-  customerName,
-  whatsappNumber,
-  serviceId,
-  note,
-  email,
-  amount,
-  userId,
-  orderContent,
-});
+
+    const paymentType = serviceId ? "order" : "wallet";
+
+    const metadata = {
+      payment_type: paymentType,
+      customerName: customerName || "",
+      whatsappNumber: whatsappNumber || "",
+      serviceId: serviceId || "",
+      note: note || "",
+      email,
+      amount,
+      userId: userId || "",
+      orderContent: JSON.stringify(orderContent || {}),
+    };
+
+    console.log("=================================");
+    console.log("PAYSTACK INITIALIZATION");
+    console.log("=================================");
+    console.log("PAYMENT TYPE:", paymentType);
+    console.log("EMAIL:", email);
+    console.log("AMOUNT:", amount);
+    console.log("CUSTOMER:", customerName);
+    console.log("WHATSAPP:", whatsappNumber);
+    console.log("SERVICE ID:", serviceId);
+    console.log("USER ID:", userId);
+    console.log("ORDER CONTENT:", orderContent);
+    console.log("METADATA BEING SENT:", metadata);
+    console.log("=================================");
+
     const response = await fetch(
       "https://api.paystack.co/transaction/initialize",
       {
@@ -48,29 +66,20 @@ console.log({
           email,
           amount,
           currency: "NGN",
-        callback_url:
-  process.env.NODE_ENV === "development"
-    ? "http://localhost:3000/payment/callback"
-    : "https://proxysocials.com/payment/callback",
 
+          callback_url:
+            process.env.NODE_ENV === "development"
+              ? "http://localhost:3000/payment/callback"
+              : "https://proxysocials.com/payment/callback",
 
-          metadata: {
-  payment_type: serviceId ? "order" : "wallet",
-
-  customerName,
-  whatsappNumber,
-  serviceId,
-  note,
-  email,
-  amount,
-  userId,
-  orderContent: JSON.stringify(orderContent),
-},
+          metadata,
         }),
       }
     );
 
     const data = await response.json();
+
+    console.log("PAYSTACK INITIALIZE RESPONSE:", data);
 
     return NextResponse.json(data, {
       status: response.status,
