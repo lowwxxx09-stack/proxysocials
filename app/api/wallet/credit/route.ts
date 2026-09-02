@@ -9,13 +9,17 @@ const supabase = createClient(
 
 export async function POST(request: NextRequest) {
   try {
+    // --------------------------------------------------
+    // 1. Read request body
+    // --------------------------------------------------
+
     const body = await request.json();
 
     const userId = body.userId;
     const reference = body.reference;
 
     // --------------------------------------------------
-    // 1. Validate required fields
+    // 2. Validate required fields
     // --------------------------------------------------
 
     if (!userId || !reference) {
@@ -30,12 +34,12 @@ export async function POST(request: NextRequest) {
 
     console.log("WALLET CREDIT REQUEST:");
     console.log({
-      userId: userId,
-      reference: reference,
+      userId,
+      reference,
     });
 
     // --------------------------------------------------
-    // 2. Verify transaction directly with Paystack
+    // 3. Verify transaction directly with Paystack
     // --------------------------------------------------
 
     const paystackUrl =
@@ -57,6 +61,10 @@ export async function POST(request: NextRequest) {
     console.log("PAYSTACK WALLET VERIFICATION:");
     console.log(paystackData);
 
+    // --------------------------------------------------
+    // 4. Make sure Paystack verification succeeded
+    // --------------------------------------------------
+
     if (!paystackResponse.ok || !paystackData.status) {
       return NextResponse.json(
         {
@@ -72,22 +80,21 @@ export async function POST(request: NextRequest) {
     const transaction = paystackData.data;
 
     // --------------------------------------------------
-    // 3. Make sure payment was successful
+    // 5. Make sure payment itself was successful
     // --------------------------------------------------
 
     if (!transaction || transaction.status !== "success") {
       return NextResponse.json(
         {
           status: false,
-          message:
-            "Paystack payment was not successful.",
+          message: "Paystack payment was not successful.",
         },
         { status: 400 }
       );
     }
 
     // --------------------------------------------------
-    // 4. Get the verified amount from Paystack
+    // 6. Get verified amount directly from Paystack
     // --------------------------------------------------
 
     const verifiedAmount =
@@ -107,7 +114,7 @@ export async function POST(request: NextRequest) {
     }
 
     // --------------------------------------------------
-    // 5. Check that the payment belongs to this user
+    // 7. Verify that payment belongs to this user
     // --------------------------------------------------
 
     const metadataUserId =
@@ -121,6 +128,7 @@ export async function POST(request: NextRequest) {
       metadataUserId !== userId
     ) {
       console.error("USER ID MISMATCH:");
+
       console.error({
         suppliedUserId: userId,
         metadataUserId: metadataUserId,
@@ -137,173 +145,134 @@ export async function POST(request: NextRequest) {
     }
 
     // --------------------------------------------------
-    // 6. Check if transaction was already credited
+    // 8. Atomically credit wallet
+    //
+    // IMPORTANT:
+    //
+    // We no longer:
+    //
+    //   SELECT transaction
+    //   UPDATE wallet
+    //   INSERT transaction
+    //
+    // separately.
+    //
+    // The PostgreSQL function handles all of this
+    // safely and prevents two simultaneous requests
+    // from crediting the same Paystack reference.
     // --------------------------------------------------
 
     const {
-      data: existingTransaction,
-      error: existingTransactionError,
-    } = await supabase
-      .from("wallet_transactions")
-      .select(
-        "id, user_id, amount, reference, status"
-      )
-      .eq("reference", reference)
-      .maybeSingle();
+      data: creditResult,
+      error: creditError,
+    } = await supabase.rpc(
+      "credit_wallet_from_paystack",
+      {
+        p_user_id: userId,
+        p_reference: reference,
+        p_amount: verifiedAmount,
+        p_paystack_transaction_id:
+          String(transaction.id),
+      }
+    );
 
-    if (existingTransactionError) {
+    // --------------------------------------------------
+    // 9. Handle database credit error
+    // --------------------------------------------------
+
+    if (creditError) {
       console.error(
-        "TRANSACTION CHECK ERROR:",
-        existingTransactionError
+        "WALLET CREDIT RPC ERROR:",
+        creditError
       );
 
       return NextResponse.json(
         {
           status: false,
           message:
-            "Unable to check transaction history.",
+            creditError.message ||
+            "Unable to credit wallet.",
         },
         { status: 500 }
       );
     }
 
-    if (existingTransaction) {
+    console.log(
+      "WALLET CREDIT RESULT:",
+      creditResult
+    );
+
+    // --------------------------------------------------
+    // 10. Make sure the database function succeeded
+    // --------------------------------------------------
+
+    if (!creditResult?.success) {
+      return NextResponse.json(
+        {
+          status: false,
+          message:
+            creditResult?.message ||
+            "Unable to credit wallet.",
+        },
+        { status: 500 }
+      );
+    }
+
+    // --------------------------------------------------
+    // 11. Handle duplicate request
+    //
+    // If another request already credited this exact
+    // Paystack reference, the database function returns
+    // already_credited = true.
+    //
+    // We DO NOT send another Telegram notification.
+    // --------------------------------------------------
+
+    if (creditResult.already_credited) {
       console.log(
         "TRANSACTION ALREADY CREDITED:",
-        existingTransaction
+        reference
       );
 
       return NextResponse.json({
         status: true,
         message: "Wallet already credited.",
         alreadyCredited: true,
-        amount: Number(existingTransaction.amount),
+        amount: Number(creditResult.amount),
+        reference,
       });
     }
 
     // --------------------------------------------------
-    // 7. Get wallet
+    // 12. Get new balance returned by database
     // --------------------------------------------------
-
-    const {
-      data: wallet,
-      error: walletError,
-    } = await supabase
-      .from("wallets")
-      .select("id, balance")
-      .eq("user_id", userId)
-      .single();
-
-    if (walletError || !wallet) {
-      console.error(
-        "WALLET LOOKUP ERROR:",
-        walletError
-      );
-
-      return NextResponse.json(
-        {
-          status: false,
-          message:
-            walletError?.message ||
-            "Wallet not found.",
-        },
-        { status: 404 }
-      );
-    }
-
-    // --------------------------------------------------
-    // 8. Calculate new balance
-    // --------------------------------------------------
-
-    const currentBalance =
-      Number(wallet.balance || 0);
 
     const newBalance =
-      currentBalance + verifiedAmount;
-
-    console.log("WALLET BALANCE CALCULATION:");
-    console.log({
-      currentBalance: currentBalance,
-      paymentAmount: verifiedAmount,
-      newBalance: newBalance,
-    });
+      Number(creditResult.new_balance);
 
     // --------------------------------------------------
-    // 9. Update wallet
-    // --------------------------------------------------
-
-    const { error: updateError } =
-      await supabase
-        .from("wallets")
-        .update({
-          balance: newBalance,
-        })
-        .eq("id", wallet.id);
-
-    if (updateError) {
-      console.error(
-        "WALLET UPDATE ERROR:",
-        updateError
-      );
-
-      return NextResponse.json(
-        {
-          status: false,
-          message:
-            updateError.message ||
-            "Unable to update wallet.",
-        },
-        { status: 500 }
-      );
-    }
-
-    // --------------------------------------------------
-    // 10. Save wallet transaction
-    // --------------------------------------------------
-
-    const {
-      error: transactionError,
-    } = await supabase
-      .from("wallet_transactions")
-      .insert({
-        user_id: userId,
-        reference: reference,
-        amount: verifiedAmount,
-        type: "fund_wallet",
-        status: "success",
-        description:
-          "Wallet funded via Paystack. Paystack transaction ID: " +
-          transaction.id,
-      });
-
-    if (transactionError) {
-      console.error(
-        "WALLET TRANSACTION INSERT ERROR:",
-        transactionError
-      );
-
-      return NextResponse.json(
-        {
-          status: false,
-          message:
-            "Wallet was credited, but transaction record failed.",
-        },
-        { status: 500 }
-      );
-    }
-
-    // --------------------------------------------------
-    // 11. Telegram notification
+    // 13. Telegram notification
+    //
+    // Only the request that actually credited the wallet
+    // sends this notification.
     // --------------------------------------------------
 
     try {
       const {
         data: profile,
+        error: profileError,
       } = await supabase
         .from("profiles")
         .select("full_name, phone")
         .eq("id", userId)
         .single();
+
+      if (profileError) {
+        console.error(
+          "PROFILE LOOKUP ERROR:",
+          profileError
+        );
+      }
 
       const telegramMessage =
         "💰 NEW PROXYSOCIALS DEPOSIT\n\n" +
@@ -344,15 +313,15 @@ export async function POST(request: NextRequest) {
     }
 
     // --------------------------------------------------
-    // 12. Success
+    // 14. Success
     // --------------------------------------------------
-
     return NextResponse.json({
       status: true,
       message: "Wallet credited successfully.",
       amount: verifiedAmount,
-      newBalance: newBalance,
-      reference: reference,
+      newBalance,
+      reference,
+      alreadyCredited: false,
     });
   } catch (error) {
     console.error(

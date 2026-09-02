@@ -1,122 +1,267 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import {
+  Suspense,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
+import {
+  useSearchParams,
+  useRouter,
+} from "next/navigation";
 
 function PaymentCallbackContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const reference = searchParams.get("reference");
+  const reference =
+    searchParams.get("reference");
 
   const [message, setMessage] = useState(
     "Verifying your payment..."
   );
 
+  // --------------------------------------------------
+  // Prevent duplicate processing on the same page
+  // --------------------------------------------------
+
+  const processingRef = useRef(false);
+
   useEffect(() => {
     if (!reference) {
-      setMessage("No payment reference found.");
+      setMessage(
+        "No payment reference found."
+      );
+
       return;
     }
 
+    // After this check, TypeScript knows this is a
+    // definite string.
+    const paymentReference = reference;
+
+    // --------------------------------------------------
+    // Prevent duplicate processing
+    // --------------------------------------------------
+
+    if (processingRef.current) {
+      console.log(
+        "PAYMENT CALLBACK ALREADY PROCESSING:",
+        paymentReference
+      );
+
+      return;
+    }
+
+    processingRef.current = true;
+
     async function processPayment() {
       try {
-        // Step 1: Verify payment
-        const verifyResponse = await fetch(
-          "/api/paystack/verify?reference=" + reference
+        // --------------------------------------------------
+        // Step 1: Verify payment with Paystack
+        // --------------------------------------------------
+
+        const verifyResponse =
+          await fetch(
+            "/api/paystack/verify?reference=" +
+              encodeURIComponent(
+                paymentReference
+              ),
+            {
+              method: "GET",
+              cache: "no-store",
+            }
+          );
+
+        const verifyData =
+          await verifyResponse.json();
+
+        console.log(
+          "VERIFY RESPONSE:",
+          verifyData
         );
 
-        const verifyData = await verifyResponse.json();
-console.log("VERIFY RESPONSE:", verifyData);
-        
-console.log("verifyData.status:", verifyData.status);
-console.log("verifyData.data:", verifyData.data);
-if (
+        console.log(
+          "verifyData.status:",
+          verifyData.status
+        );
+
+        console.log(
+          "verifyData.data:",
+          verifyData.data
+        );
+
+        // --------------------------------------------------
+        // Step 2: Make sure verification succeeded
+        // --------------------------------------------------
+
+        if (
           !verifyData.status ||
-          verifyData.data?.status !== "success"
+          verifyData.data?.status !==
+            "success"
         ) {
-          setMessage("Payment verification failed.");
+          setMessage(
+            "Payment verification failed."
+          );
+
           return;
         }
 
+        // --------------------------------------------------
+        // Step 3: Get payment type
+        // --------------------------------------------------
+
         const paymentType =
-  verifyData.data.metadata.payment_type;
+          verifyData.data?.metadata
+            ?.payment_type;
+
+        // --------------------------------------------------
+        // ORDER PAYMENT
+        // --------------------------------------------------
 
         if (paymentType === "order") {
-  const completeResponse = await fetch(
-    "/api/paystack/complete",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        reference,
-      }),
-    }
-  );
+          const completeResponse =
+            await fetch(
+              "/api/paystack/complete",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type":
+                    "application/json",
+                },
+                body: JSON.stringify({
+                  reference:
+                    paymentReference,
+                }),
+              }
+            );
 
-  const completeData = await completeResponse.json();
+          const completeData =
+            await completeResponse.json();
 
-  if (!completeData.status) {
-    console.error("Complete error:", completeData);
+          if (!completeData.status) {
+            console.error(
+              "Complete error:",
+              completeData
+            );
 
-    setMessage(
-      completeData.message ||
-        "Order creation failed."
-    );
+            setMessage(
+              completeData.message ||
+                "Order creation failed."
+            );
 
-    return;
-  }
+            return;
+          }
 
-  setMessage(
-  "Payment successful! Order created 🎉 Redirecting to your orders..."
-);
+          setMessage(
+            "Payment successful! Order created 🎉 Redirecting to your orders..."
+          );
 
-setTimeout(() => {
-  router.push("/order-history");
-  router.refresh();
-}, 2000);
+          setTimeout(() => {
+            router.push(
+              "/order-history"
+            );
 
-} else if (paymentType === "wallet") {
-  const walletResponse = await fetch(
-    "/api/wallet/credit",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        userId: verifyData.data.metadata.userId,
-        reference,
-        amount: Number(verifyData.data.amount) / 100,
-      }),
-    }
-  );
+            router.refresh();
+          }, 2000);
 
-  const walletData = await walletResponse.json();
+          return;
+        }
 
-  if (!walletData.status) {
-    console.error("Wallet credit error:", walletData);
+        // --------------------------------------------------
+        // WALLET PAYMENT
+        // --------------------------------------------------
 
-    setMessage(
-      walletData.message ||
-        "Unable to credit wallet."
-    );
+        if (paymentType === "wallet") {
+          const metadataUserId =
+            verifyData.data?.metadata
+              ?.userId;
 
-    return;
-  }
+          if (!metadataUserId) {
+            setMessage(
+              "Payment user information is missing."
+            );
 
-  setMessage(
-    "Wallet funded successfully! 🎉"
-  );
+            return;
+          }
 
-  setTimeout(() => {
-    router.push("/dashboard");
-    router.refresh();
-  }, 2000);
-}
+          const walletResponse =
+            await fetch(
+              "/api/wallet/credit",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type":
+                    "application/json",
+                },
+                body: JSON.stringify({
+                  userId:
+                    metadataUserId,
+                  reference:
+                    paymentReference,
+                }),
+                cache: "no-store",
+              }
+            );
 
+          const walletData =
+            await walletResponse.json();
+
+          console.log(
+            "WALLET CREDIT RESPONSE:",
+            walletData
+          );
+
+          if (!walletData.status) {
+            console.error(
+              "Wallet credit error:",
+              walletData
+            );
+
+            setMessage(
+              walletData.message ||
+                "Unable to credit wallet."
+            );
+
+            return;
+          }
+
+          // --------------------------------------------------
+          // Duplicate callback
+          // --------------------------------------------------
+
+          if (
+            walletData.alreadyCredited
+          ) {
+            setMessage(
+              "This payment has already been credited to your wallet."
+            );
+          } else {
+            setMessage(
+              "Wallet funded successfully! 🎉"
+            );
+          }
+
+          setTimeout(() => {
+            router.push(
+              "/dashboard"
+            );
+
+            router.refresh();
+          }, 2000);
+
+          return;
+        }
+
+        // --------------------------------------------------
+        // Unknown payment type
+        // --------------------------------------------------
+
+        setMessage(
+          "Unable to determine payment type."
+        );
       } catch (error) {
         console.error(
           "Payment processing error:",
