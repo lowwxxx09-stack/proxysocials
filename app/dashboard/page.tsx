@@ -1,471 +1,329 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
-import CustomerMenu from "@/components/CustomerMenu";
-import TelegramBanner from "@/components/TelegramBanner";
-import TelegramSupportButton from "@/components/TelegramSupportButton";
-import Link from "next/link";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/utils/supabase/client';
+import CustomerMenu from '@/components/CustomerMenu';
+import TelegramBanner from '@/components/TelegramBanner';
+import TelegramSupportButton from '@/components/TelegramSupportButton';
+import Link from 'next/link';
 
 export default function Dashboard() {
   const router = useRouter();
-const supabase = createClient();
+  const supabase = createClient();
+
   const [profile, setProfile] = useState<any>(null);
   const [orders, setOrders] = useState<any[]>([]);
-  const [wallet, setWallet] = useState<any>(null); 
-const [loading, setLoading] = useState(true);
+  const [wallet, setWallet] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getProfile();
   }, []);
 
   async function getProfile() {
-   
-    const supabase = createClient(); 
-    
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
     if (!user) {
-      router.push("/login");
+      router.push('/login');
       return;
     }
 
-    const { data, error } = await supabase
-  .from("profiles")
-  .select("*")
-  .eq("id", user.id)
-  .single();
+    const [{ data: profileData, error: profileError }, { data: walletData, error: walletError }, { data: orderData, error: orderError }] =
+      await Promise.all([
+        supabase.from('profiles').select('*').eq('id', user.id).single(),
+        supabase
+          .from('wallets')
+          .select('id, user_id, balance')
+          .eq('user_id', user.id)
+          .maybeSingle(),
+        supabase
+          .from('order')
+          .select(`*, services (title, category)`)
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false }),
+      ]);
 
-    if (error) {
-  console.error(error);
-  return;
-}
+    if (profileError) console.error('PROFILE FETCH ERROR:', profileError);
+    else setProfile(profileData);
 
-    setProfile(data);
+    if (walletError) {
+      console.error('WALLET FETCH ERROR:', walletError);
+      setWallet(null);
+    } else setWallet(walletData);
 
+    if (orderError) {
+      console.error('ORDER FETCH ERROR:', orderError);
+      setOrders([]);
+    } else setOrders(orderData || []);
 
-
-    const { data: walletData, error: walletError } = await supabase
-  .from("wallets")
-  .select("id, user_id, balance")
-  .eq("user_id", user.id)
-  .maybeSingle();
-
-
-
-if (walletError) {
-  console.error("WALLET FETCH ERROR:", walletError);
-  setWallet(null);
-} else {
-  setWallet(walletData);
-}
-
-
-
-const { data: orderData, error: orderError } = await supabase
-  .from("order")
-  .select(`
-  *,
-  services (
-    title,
-    category
-  )
-`)
-  .eq("user_id", user.id)
-  .order("created_at", { ascending: false });
-
-if (orderError) {
-  console.log(orderError.message);
-} else {
-  setOrders(orderData || []);
-}
-
-setLoading(false);
+    setLoading(false);
   }
 
-  
-
-  
-
-
-if (loading) {
-  return (
-    <main className="min-h-screen flex items-center justify-center bg-sky-50 px-6">
-      <div className="text-center">
-        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-sky-600 shadow-lg">
-          <span className="text-3xl font-black text-white">P</span>
-        </div>
-
-        <h1 className="text-3xl font-black text-sky-700">
-          ProxySocials
-        </h1>
-
-        <p className="mt-2 text-gray-500 font-medium">
-          Preparing your dashboard
-        </p>
-
-        <div className="mt-5 flex justify-center gap-2">
-          <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-sky-600 [animation-delay:-0.3s]" />
-          <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-sky-600 [animation-delay:-0.15s]" />
-          <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-sky-600" />
-        </div>
-      </div>
-    </main>
-  );
-}
+  if (loading) {
     return (
-  <main className="min-h-screen bg-gradient-to-b from-sky-50 to-white px-5 py-12">
-    <CustomerMenu />
-
-    <div className="max-w-6xl mx-auto">
-
-<TelegramBanner />
-
-      {/* Dashboard Header */}
-
-      <div className="dashboard-fade-up bg-white rounded-3xl border border-sky-100 shadow-xl p-8 flex flex-col md:flex-row justify-between gap-6">
-
-
-        <div>
-
-          <h1 className="text-2xl sm:text-3xl md:text-5xl leading-tight font-black text-sky-700">
-  Welcome, {profile?.full_name || "User"} 👋
-</h1>
-
-
-          <p className="mt-3 text-gray-600 text-lg">
-            Manage your orders, delivered products, and rewards.
-          </p>
-
-
-          <p className="mt-2 text-gray-500">
-  WhatsApp: {profile?.phone}
-</p>
-
-<div className="mt-6">
-  <Link
-    href="/profile"
-    className="inline-block bg-sky-600 hover:bg-sky-700 text-white px-6 py-3 rounded-2xl font-bold transition"
-  >
-    👤 My Profile
-  </Link>
-</div>
-
-</div>
-
-
-
-
-      </div>
-
-
-
-      {/* Stats Cards */}
-
-      <div className="grid md:grid-cols-3 gap-6 mt-8">
-
-
-        <div className="dashboard-fade-up bg-white rounded-3xl border border-sky-100 shadow-xl p-6">
-
-          <p className="text-gray-500 font-semibold">
-            Total Orders
-          </p>
-
-          <h2 className="text-4xl font-black text-sky-700 mt-3">
-            {orders.length}
-          </h2>
-
-        </div>
-
-
-
-        
-
-
-<div className="dashboard-fade-up dashboard-delay-1 bg-white rounded-2xl border border-sky-100 shadow-lg p-5 sm:p-6 flex items-center justify-between gap-4">
-
-  <div>
-    <p className="text-gray-500 font-semibold text-sm sm:text-base">
-      Wallet Balance
-    </p>
-
-    <h1 className="text-3xl sm:text-4xl font-black text-sky-700 mt-2">
-      ₦{Number(wallet?.balance || 0).toLocaleString()}
-    </h1>
-  </div>
-
-  <Link
-    href="/fund-wallet"
-    className="bg-sky-600 hover:bg-sky-700 text-white px-4 py-3 sm:px-6 sm:py-3 rounded-xl font-bold text-sm sm:text-base text-center transition whitespace-nowrap"
-  >
-    Fund Wallet
-  </Link>
-
-</div>
-
-</div>
-
-
-
-      {/* Orders Section */}
-
-<div className="dashboard-fade-up dashboard-delay-2 bg-white rounded-3xl border border-sky-100 shadow-xl p-8 mt-8">
-
-  <div className="flex items-center justify-between gap-3 mb-8">
-
-    <h2 className="text-2xl sm:text-3xl font-black text-sky-700">
-      My Orders
-    </h2>
-
-    <span className="text-gray-500 font-semibold text-sm sm:text-base whitespace-nowrap">
-      {orders.length} total
-    </span>
-
-  </div>
-
-
-
-        {orders.length === 0 ? (
-
-          <div className="bg-sky-50 rounded-2xl p-6 text-center">
-
-            <p className="text-gray-600">
-              You haven't placed any orders yet.
-            </p>
-
+      <main className="min-h-screen flex items-center justify-center bg-slate-50 px-5">
+        <div className="text-center">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-sky-600 shadow-lg shadow-sky-200">
+            <span className="text-2xl font-black text-white">P</span>
           </div>
+          <h1 className="text-2xl font-black text-slate-900">ProxySocials</h1>
+          <p className="mt-2 text-sm font-medium text-slate-500">Preparing your dashboard...</p>
+          <div className="mt-5 flex justify-center gap-1.5">
+            <span className="h-2 w-2 animate-bounce rounded-full bg-sky-600 [animation-delay:-0.3s]" />
+            <span className="h-2 w-2 animate-bounce rounded-full bg-sky-600 [animation-delay:-0.15s]" />
+            <span className="h-2 w-2 animate-bounce rounded-full bg-sky-600" />
+          </div>
+        </div>
+      </main>
+    );
+  }
 
+  const balance = Number(wallet?.balance || 0);
+  const recentOrders = orders.slice(0, 4);
+  const completedOrders = orders.filter(
+    (order) => String(order.order_status || '').toLowerCase() === 'completed'
+  ).length;
+  const totalSpent = orders.reduce((total, order) => total + Number(order.amount || 0), 0);
+  const referralCode = profile?.referral_code || 'None';
 
-        ) : (
+  function copyText(value: string, successMessage: string) {
+    if (!value || value === 'None') return;
+    navigator.clipboard
+      .writeText(value)
+      .then(() => alert(successMessage))
+      .catch(() => alert('Unable to copy. Please try again.'));
+  }
 
+  function formatStatus(status: string) {
+    const normalized = String(status || 'pending').toLowerCase();
+    if (normalized === 'completed' || normalized === 'success') return 'Completed';
+    if (normalized === 'rejected' || normalized === 'failed') return 'Failed';
+    return 'Pending';
+  }
 
-          <div className="space-y-6">
+  function statusClasses(status: string) {
+    const normalized = String(status || '').toLowerCase();
+    if (normalized === 'completed' || normalized === 'success') return 'bg-emerald-50 text-emerald-700';
+    if (normalized === 'rejected' || normalized === 'failed') return 'bg-red-50 text-red-700';
+    return 'bg-amber-50 text-amber-700';
+  }
 
+  return (
+    <main className="min-h-screen overflow-x-hidden bg-slate-50 pb-10">
+      <CustomerMenu />
 
-            {orders.map((order) => (
+      <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <TelegramBanner />
 
+        <section className="mt-5 overflow-hidden rounded-[28px] bg-slate-950 shadow-xl shadow-slate-200">
+          <div className="relative p-5 sm:p-7 lg:p-9">
+            <div className="absolute -right-20 -top-24 h-56 w-56 rounded-full bg-sky-500/20 blur-3xl" />
+            <div className="absolute -bottom-24 left-1/3 h-48 w-48 rounded-full bg-cyan-400/10 blur-3xl" />
 
-              <div
-                key={order.id}
-                className="border border-gray-200 rounded-3xl p-6 hover:shadow-md transition"
-              >
-
-
-                <div className="flex flex-col md:flex-row justify-between gap-4">
-
-
-                  <div>
-
-
-                    <h3 className="text-2xl font-black text-gray-900">
-                      {order.services?.title}
-                    </h3>
-
-
-                    <p className="text-sky-600 font-semibold mt-1">
-                      {order.services?.category}
-                    </p>
-
-
-                  </div>
-
-
-
-                  <div className="md:text-right">
-
-
-                    <p className="text-2xl font-black text-sky-700">
-                      ₦{Number(order.amount).toLocaleString()}
-                    </p>
-
-
-                    <p className="text-sm text-gray-500 mt-1">
-                      {new Date(order.created_at).toLocaleDateString()}
-                    </p>
-
-
-                  </div>
-
-
-                </div>
-
-
-
-
-                <div className="grid md:grid-cols-2 gap-4 mt-6">
-
-
-                  <div className="bg-sky-50 rounded-2xl p-4">
-
-                    <p className="text-sm text-gray-500">
-                      Payment Status
-                    </p>
-
-                    <p className="font-bold text-gray-900 mt-1">
-                      {order.payment_status}
-                    </p>
-
-                  </div>
-
-
-
-                  <div className="bg-sky-50 rounded-2xl p-4">
-
-                    <p className="text-sm text-gray-500">
-                      Order Status
-                    </p>
-
-                    <p className="font-bold text-gray-900 mt-1">
-                      {order.order_status}
-                    </p>
-
-                  </div>
-
-
-                </div>
-
-
-
-                <div className="mt-5">
-
-
-                  <button
-                    onClick={() =>
-                      navigator.clipboard.writeText(order.id)
-                    }
-                    className="bg-sky-600 hover:bg-sky-700 text-white px-5 py-3 rounded-xl font-bold transition"
-                  >
-                    Copy Order ID
-                  </button>
-
-
-                </div>
-{/* Delivered Products */}
-
-      {order.delivered_stock && (
-        <div className="mt-8 border-t pt-6">
-
-
-          <h4 className="text-xl font-black text-green-700 mb-5">
-            🎉 Delivered Product
-          </h4>
-
-
-
-          <div className="space-y-4">
-
-            {Object.entries(order.delivered_stock).map(
-              ([key, value]) => (
-
-                <div key={key}>
-
-
-                  <p className="font-bold capitalize text-gray-700">
-                    {key.replace(/_/g, " ")}
+            <div className="relative">
+              <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-sky-300">Welcome back</p>
+                  <h1 className="mt-1 break-words text-2xl font-black tracking-tight text-white sm:text-4xl">
+                    {profile?.full_name || 'User'} 👋
+                  </h1>
+                  <p className="mt-2 max-w-xl text-sm leading-6 text-slate-300 sm:text-base">
+                    Everything you need to manage your ProxySocials account in one place.
                   </p>
-
-
-                  <div className="mt-2 flex justify-between items-center gap-3 border rounded-xl p-4">
-
-                    <span className="break-all text-gray-800">
-                      {String(value)}
-                    </span>
-
-
-                    <button
-                      onClick={() =>
-                        navigator.clipboard.writeText(String(value))
-                      }
-                      className="text-sky-600 font-bold whitespace-nowrap"
-                    >
-                      Copy
-                    </button>
-
-
-                  </div>
-
-
                 </div>
 
-              )
-            )}
-
-          </div>
-
-
-        </div>
-      )}
-
+                <Link
+                  href="/profile"
+                  className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-bold text-white transition hover:bg-white/15 sm:w-auto"
+                >
+                  👤 Profile
+                </Link>
               </div>
 
-            ))}
+              <div className="mt-7 grid gap-3 sm:grid-cols-2">
+                <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.07] p-5 backdrop-blur-sm">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Wallet balance</p>
+                      <p className="mt-2 break-all text-3xl font-black tracking-tight text-white sm:text-4xl">
+                        ₦{balance.toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-500/20 text-lg">💳</div>
+                  </div>
+                  <Link
+                    href="/fund-wallet"
+                    className="mt-5 flex min-h-11 w-full items-center justify-center rounded-xl bg-sky-500 px-4 py-3 text-sm font-black text-white transition hover:bg-sky-400"
+                  >
+                    + Fund Wallet
+                  </Link>
+                </div>
 
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.07] p-4">
+                    <p className="text-xs font-semibold text-slate-400">Orders</p>
+                    <p className="mt-2 text-2xl font-black text-white">{orders.length}</p>
+                    <p className="mt-1 text-xs text-slate-500">Total orders</p>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.07] p-4">
+                    <p className="text-xs font-semibold text-slate-400">Completed</p>
+                    <p className="mt-2 text-2xl font-black text-white">{completedOrders}</p>
+                    <p className="mt-1 text-xs text-slate-500">Successfully delivered</p>
+                  </div>
+                  <div className="col-span-2 rounded-2xl border border-white/10 bg-white/[0.07] p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-semibold text-slate-400">Total spent</p>
+                        <p className="mt-1 text-xl font-black text-white">₦{totalSpent.toLocaleString()}</p>
+                      </div>
+                      <Link href="/order-history" className="shrink-0 text-xs font-bold text-sky-300 hover:text-sky-200">
+                        View history →
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
+        <section className="mt-7">
+          <div className="mb-3 px-1">
+            <h2 className="text-lg font-black text-slate-900 sm:text-xl">Quick actions</h2>
+            <p className="text-sm text-slate-500">Get things done faster.</p>
           </div>
 
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {[
+              { href: '/services', icon: '🛍️', title: 'Services', text: 'Browse marketplace', bg: 'bg-sky-50' },
+              { href: '/fund-wallet', icon: '💳', title: 'Add Funds', text: 'Top up wallet', bg: 'bg-emerald-50' },
+              { href: '/order-history', icon: '🧾', title: 'Activity', text: 'View order history', bg: 'bg-violet-50' },
+              { href: '/profile', icon: '👤', title: 'Profile', text: 'Manage account', bg: 'bg-amber-50' },
+            ].map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="group min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-md"
+              >
+                <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${item.bg} text-xl`}>{item.icon}</div>
+                <h3 className="mt-3 truncate text-sm font-black text-slate-900">{item.title}</h3>
+                <p className="mt-1 truncate text-xs text-slate-500">{item.text}</p>
+              </Link>
+            ))}
+          </div>
+        </section>
 
-        )}
+        <section className="mt-8">
+          <div className="mb-3 flex items-end justify-between gap-3 px-1">
+            <div>
+              <h2 className="text-lg font-black text-slate-900 sm:text-xl">Discover</h2>
+              <p className="text-sm text-slate-500">Find something useful today.</p>
+            </div>
+            <Link href="/services" className="shrink-0 text-xs font-black text-sky-600 sm:text-sm">Browse all →</Link>
+          </div>
 
-      
-</div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <Link href="/services" className="relative min-w-0 overflow-hidden rounded-2xl bg-gradient-to-br from-sky-600 to-cyan-500 p-5 text-white shadow-sm transition hover:shadow-md">
+              <div className="relative z-10">
+                <p className="text-xs font-bold uppercase tracking-wider text-sky-100">Marketplace</p>
+                <h3 className="mt-2 text-xl font-black">Explore Services</h3>
+                <p className="mt-1 max-w-[210px] text-xs leading-5 text-sky-50">Browse available social media services.</p>
+              </div>
+              <span className="absolute -bottom-5 -right-2 text-7xl opacity-15">🛍️</span>
+            </Link>
 
-      
+            <Link href="/fund-wallet" className="relative min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-emerald-200 hover:shadow-md">
+              <p className="text-xs font-bold uppercase tracking-wider text-emerald-600">Wallet</p>
+              <h3 className="mt-2 text-xl font-black text-slate-900">Fund & Go</h3>
+              <p className="mt-1 max-w-[220px] text-xs leading-5 text-slate-500">Add funds and keep your wallet ready for your next purchase.</p>
+              <span className="absolute -bottom-4 -right-1 text-6xl opacity-10">💳</span>
+            </Link>
 
+            <div className="relative min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-wider text-violet-600">Rewards</p>
+              <h3 className="mt-2 text-xl font-black text-slate-900">Refer & Earn</h3>
+              <p className="mt-1 max-w-[220px] text-xs leading-5 text-slate-500">Share your referral code and grow your rewards.</p>
+              <button
+                type="button"
+                onClick={() => copyText(referralCode, 'Referral code copied!')}
+                className="mt-4 min-h-10 rounded-xl bg-slate-900 px-4 py-2 text-xs font-black text-white transition hover:bg-slate-800"
+              >
+                Copy Code
+              </button>
+            </div>
+          </div>
+        </section>
 
-      {/* Referral Section */}
+        <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <h2 className="text-lg font-black text-slate-900 sm:text-xl">Recent activity</h2>
+              <p className="mt-1 text-sm text-slate-500">A quick look at your latest activity.</p>
+            </div>
+            <Link href="/order-history" className="shrink-0 text-xs font-black text-sky-600 sm:text-sm">View all →</Link>
+          </div>
 
+          {recentOrders.length === 0 ? (
+            <div className="mt-6 rounded-2xl bg-slate-50 p-6 text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-white text-xl shadow-sm">🛍️</div>
+              <h3 className="mt-3 text-sm font-black text-slate-900">Nothing here yet</h3>
+              <p className="mt-1 text-xs text-slate-500">Your recent purchases will appear here.</p>
+              <Link href="/services" className="mt-4 inline-flex min-h-10 items-center justify-center rounded-xl bg-sky-600 px-4 py-2 text-xs font-black text-white">Browse Services</Link>
+            </div>
+          ) : (
+            <div className="mt-5 divide-y divide-slate-100">
+              {recentOrders.map((order) => (
+                <div key={order.id} className="flex min-w-0 items-center gap-3 py-4 first:pt-0 last:pb-0">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-base">🛍️</div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-black text-slate-900">{order.services?.title || 'Service order'}</p>
+                    <p className="mt-1 truncate text-xs text-slate-500">
+                      {order.services?.category || 'ProxySocials'} · {new Date(order.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <p className="text-sm font-black text-slate-900">₦{Number(order.amount || 0).toLocaleString()}</p>
+                    <span className={`mt-1 inline-flex rounded-full px-2 py-1 text-[10px] font-black ${statusClasses(order.order_status)}`}>
+                      {formatStatus(order.order_status)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
 
-      <div className="bg-sky-600 text-white rounded-3xl shadow-xl p-8 mt-8">
+        <section className="mt-8 overflow-hidden rounded-3xl bg-gradient-to-br from-sky-600 to-cyan-500 p-5 text-white shadow-lg shadow-sky-100 sm:p-7">
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div className="min-w-0">
+              <p className="text-xs font-black uppercase tracking-wider text-sky-100">Rewards</p>
+              <h2 className="mt-1 text-2xl font-black sm:text-3xl">Grow & Earn 🚀</h2>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-sky-50">
+                Share your referral code with friends and earn rewards when they join ProxySocials.
+              </p>
+            </div>
 
-
-        <h2 className="text-3xl font-black">
-          Grow & Earn 🚀
-        </h2>
-
-
-        <p className="mt-3 text-sky-100 text-lg">
-          Share your referral code and earn rewards when people join ProxySocials.
-        </p>
-
-
-
-        <div className="mt-6 bg-white text-sky-700 rounded-2xl p-5">
-
-
-          <p className="font-semibold">
-            Your Referral Code
-          </p>
-
-
-          <p className="text-3xl font-black mt-2 break-all">
-            {profile?.referral_code || "None"}
-          </p>
-
-
-        </div>
-
-
-
-        <button
-          className="mt-6 bg-white text-sky-700 px-6 py-3 rounded-xl font-bold hover:bg-sky-50 transition"
-          onClick={() =>
-            navigator.clipboard.writeText(profile?.referral_code)
-          }
-        >
-          Copy Referral Code
-        </button>
-
-
+            <div className="w-full rounded-2xl bg-white p-4 text-sky-700 md:max-w-sm">
+              <p className="text-xs font-bold text-slate-500">Your referral code</p>
+              <div className="mt-2 flex min-w-0 items-center gap-2">
+                <p className="min-w-0 flex-1 break-all text-xl font-black">{referralCode}</p>
+                <button
+                  type="button"
+                  onClick={() => copyText(referralCode, 'Referral code copied!')}
+                  className="min-h-10 shrink-0 rounded-xl bg-sky-600 px-3 py-2 text-xs font-black text-white transition hover:bg-sky-700"
+                >
+                  Copy
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
 
-
-
-    </div>
-<TelegramSupportButton />
-
-  </main>
-);
+      <TelegramSupportButton />
+    </main>
+  );
 }
