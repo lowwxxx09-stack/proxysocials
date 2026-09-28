@@ -10,6 +10,7 @@ export default function Signup() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [referralCode, setReferralCode] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
@@ -30,7 +31,7 @@ export default function Signup() {
       !password ||
       !confirmPassword
     ) {
-      setError("Please fill in all fields.");
+      setError("Please fill in all required fields.");
       return;
     }
 
@@ -39,8 +40,16 @@ export default function Signup() {
       return;
     }
 
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+
     setLoading(true);
 
+    /*
+     * CREATE AUTH ACCOUNT
+     */
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -60,23 +69,63 @@ export default function Signup() {
 
     const user = data.user;
 
-    if (user) {
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .insert({
-          id: user.id,
-          full_name: fullName,
-          phone,
-          referral_code: `PROXY${Math.floor(
-            Math.random() * 100000
-          )}`,
-          wallet_balance: 0,
-        });
+    if (!user) {
+      setError("Account could not be created. Please try again.");
+      setLoading(false);
+      return;
+    }
 
-      if (profileError) {
-        setError(profileError.message);
-        setLoading(false);
-        return;
+    /*
+     * CREATE PROFILE
+     *
+     * Referral codes are generated automatically
+     * by the database trigger.
+     */
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .insert({
+        id: user.id,
+        full_name: fullName,
+        phone,
+        wallet_balance: 0,
+      });
+
+    if (profileError) {
+      setError(profileError.message);
+      setLoading(false);
+      return;
+    }
+
+    /*
+     * PROCESS REFERRAL
+     *
+     * If the new customer entered a referral code,
+     * the database will:
+     *
+     * - Find the referrer
+     * - Prevent self-referrals
+     * - Prevent duplicate rewards
+     * - Credit the referrer ₦1,500
+     * - Create the referral record
+     * - Create the wallet transaction
+     */
+    if (referralCode.trim()) {
+      const { error: referralError } = await supabase.rpc(
+        "claim_referral",
+        {
+          p_referral_code: referralCode.trim(),
+        }
+      );
+
+      /*
+       * Referral failure should NOT stop account creation.
+       * The customer can still use their new account.
+       */
+      if (referralError) {
+        console.log(
+          "Referral claim failed:",
+          referralError.message
+        );
       }
     }
 
@@ -171,6 +220,30 @@ export default function Signup() {
             />
           </div>
 
+          {/* REFERRAL CODE */}
+          <div className="login-field">
+            <label className="block text-gray-700 font-semibold mb-2">
+              Referral Code{" "}
+              <span className="text-gray-400 font-normal">
+                (Optional)
+              </span>
+            </label>
+
+            <input
+              type="text"
+              placeholder="Enter referral code"
+              value={referralCode}
+              onChange={(e) =>
+                setReferralCode(e.target.value.toUpperCase())
+              }
+              className="w-full border border-gray-300 rounded-xl px-4 py-3 text-black uppercase transition-all duration-300 focus:outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100 focus:-translate-y-0.5"
+            />
+
+            <p className="text-xs text-gray-500 mt-2">
+              Have a ProxySocials referral code? Enter it here.
+            </p>
+          </div>
+
           {/* PASSWORD */}
           <div className="login-field login-delay-1">
             <label className="block text-gray-700 font-semibold mb-2">
@@ -196,7 +269,9 @@ export default function Signup() {
               type="password"
               placeholder="Confirm your password"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={(e) =>
+                setConfirmPassword(e.target.value)
+              }
               className="w-full border border-gray-300 rounded-xl px-4 py-3 text-black transition-all duration-300 focus:outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100 focus:-translate-y-0.5"
             />
           </div>
