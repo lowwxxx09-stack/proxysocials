@@ -95,24 +95,24 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-slate-50 px-5">
+      <main className="flex min-h-screen items-center justify-center bg-slate-50 px-5">
         <div className="text-center">
-          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-sky-600 shadow-lg shadow-sky-200">
-            <span className="text-2xl font-black text-white">P</span>
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-950 shadow-lg">
+            <span className="text-xl font-black text-white">P</span>
           </div>
 
-          <h1 className="text-2xl font-black text-slate-900">
+          <h1 className="mt-4 text-xl font-black text-slate-900">
             ProxySocials
           </h1>
 
-          <p className="mt-2 text-sm font-medium text-slate-500">
+          <p className="mt-1 text-sm text-slate-500">
             Preparing your dashboard...
           </p>
 
-          <div className="mt-5 flex justify-center gap-1.5">
-            <span className="h-2 w-2 animate-bounce rounded-full bg-sky-600 [animation-delay:-0.3s]" />
-            <span className="h-2 w-2 animate-bounce rounded-full bg-sky-600 [animation-delay:-0.15s]" />
-            <span className="h-2 w-2 animate-bounce rounded-full bg-sky-600" />
+          <div className="mt-4 flex justify-center gap-1.5">
+            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-sky-600 [animation-delay:-0.3s]" />
+            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-sky-600 [animation-delay:-0.15s]" />
+            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-sky-600" />
           </div>
         </div>
       </main>
@@ -140,11 +140,21 @@ export default function Dashboard() {
       String(referral.status || '').toLowerCase() === 'completed'
   ).length;
 
-  const totalReferralEarnings = referrals.reduce(
-    (total, referral) =>
-      total + Number(referral.reward_amount || 0),
-    0
-  );
+  const pendingReferrals = referrals.filter(
+    (referral) =>
+      String(referral.status || '').toLowerCase() === 'pending'
+  ).length;
+
+  const totalReferralEarnings = referrals
+    .filter(
+      (referral) =>
+        String(referral.status || '').toLowerCase() === 'completed'
+    )
+    .reduce(
+      (total, referral) =>
+        total + Number(referral.reward_amount || 0),
+      0
+    );
 
   function copyText(value: string, successMessage: string) {
     if (!value || value === 'None') return;
@@ -215,142 +225,104 @@ https://proxysocials.com/signup
   }
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-slate-50 pb-10">
+    <main className="min-h-screen overflow-x-hidden bg-slate-50 pb-8">
       <CustomerMenu />
 
-      <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+      <div className="mx-auto w-full max-w-6xl px-3 py-4 sm:px-5 sm:py-6 lg:px-8">
 
+        {/* TELEGRAM */}
         <TelegramBanner />
 
         {/* =========================
-            WELCOME / WALLET
+            PREMIUM HEADER
         ========================== */}
-        <section className="mt-5 overflow-hidden rounded-[28px] bg-slate-950 shadow-xl shadow-slate-200">
-          <div className="relative p-5 sm:p-7 lg:p-9">
+        <section className="mt-4 overflow-hidden rounded-[24px] bg-slate-950 shadow-xl shadow-slate-200">
+          <div className="relative p-4 sm:p-6">
 
-            <div className="absolute -right-20 -top-24 h-56 w-56 rounded-full bg-sky-500/20 blur-3xl" />
-
-            <div className="absolute -bottom-24 left-1/3 h-48 w-48 rounded-full bg-cyan-400/10 blur-3xl" />
+            {/* subtle glow */}
+            <div className="pointer-events-none absolute -right-20 -top-20 h-48 w-48 rounded-full bg-sky-500/20 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-24 left-1/3 h-40 w-40 rounded-full bg-violet-500/10 blur-3xl" />
 
             <div className="relative">
 
-              <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-
+              {/* Greeting */}
+              <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
-
-                  <p className="text-sm font-semibold text-sky-300">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-sky-300">
                     Welcome back
                   </p>
 
-                  <h1 className="mt-1 break-words text-2xl font-black tracking-tight text-white sm:text-4xl">
+                  <h1 className="mt-0.5 truncate text-xl font-black tracking-tight text-white sm:text-2xl">
                     {profile?.full_name || 'User'} 👋
                   </h1>
-
-                  <p className="mt-2 max-w-xl text-sm leading-6 text-slate-300 sm:text-base">
-                    Everything you need to manage your ProxySocials account in one place.
-                  </p>
-
                 </div>
 
                 <Link
                   href="/profile"
-                  className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-bold text-white transition hover:bg-white/15 sm:w-auto"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/10 text-base transition hover:bg-white/15"
+                  aria-label="Profile"
                 >
-                  👤 Profile
+                  👤
                 </Link>
-
               </div>
 
-              <div className="mt-7 grid gap-3 sm:grid-cols-2">
+              {/* Wallet */}
+              <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.07] p-4 backdrop-blur-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      Wallet balance
+                    </p>
 
-                {/* WALLET */}
-                <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.07] p-5 backdrop-blur-sm">
-
-                  <div className="flex items-start justify-between gap-3">
-
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                        Wallet balance
-                      </p>
-
-                      <p className="mt-2 break-all text-3xl font-black tracking-tight text-white sm:text-4xl">
-                        ₦{balance.toLocaleString()}
-                      </p>
-                    </div>
-
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-500/20 text-lg">
-                      💳
-                    </div>
-
+                    <p className="mt-1 break-all text-2xl font-black tracking-tight text-white sm:text-3xl">
+                      ₦{balance.toLocaleString()}
+                    </p>
                   </div>
 
-                  <Link
-                    href="/fund-wallet"
-                    className="mt-5 flex min-h-11 w-full items-center justify-center rounded-xl bg-sky-500 px-4 py-3 text-sm font-black text-white transition hover:bg-sky-400"
-                  >
-                    + Fund Wallet
-                  </Link>
-
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-500/15 text-base">
+                    💳
+                  </div>
                 </div>
 
-                {/* ACCOUNT STATS */}
-                <div className="grid grid-cols-2 gap-3">
+                <Link
+                  href="/fund-wallet"
+                  className="mt-3 flex h-10 w-full items-center justify-center rounded-xl bg-sky-500 px-4 text-xs font-black text-white transition hover:bg-sky-400"
+                >
+                  + Fund Wallet
+                </Link>
+              </div>
 
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.07] p-4">
-                    <p className="text-xs font-semibold text-slate-400">
-                      Orders
-                    </p>
+              {/* Stats */}
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                <div className="rounded-xl border border-white/10 bg-white/[0.05] px-3 py-3">
+                  <p className="text-[9px] font-bold uppercase tracking-wide text-slate-500">
+                    Orders
+                  </p>
 
-                    <p className="mt-2 text-2xl font-black text-white">
-                      {orders.length}
-                    </p>
-
-                    <p className="mt-1 text-xs text-slate-500">
-                      Total orders
-                    </p>
-                  </div>
-
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.07] p-4">
-                    <p className="text-xs font-semibold text-slate-400">
-                      Completed
-                    </p>
-
-                    <p className="mt-2 text-2xl font-black text-white">
-                      {completedOrders}
-                    </p>
-
-                    <p className="mt-1 text-xs text-slate-500">
-                      Successfully delivered
-                    </p>
-                  </div>
-
-                  <div className="col-span-2 rounded-2xl border border-white/10 bg-white/[0.07] p-4">
-
-                    <div className="flex items-center justify-between gap-3">
-
-                      <div>
-                        <p className="text-xs font-semibold text-slate-400">
-                          Total spent
-                        </p>
-
-                        <p className="mt-1 text-xl font-black text-white">
-                          ₦{totalSpent.toLocaleString()}
-                        </p>
-                      </div>
-
-                      <Link
-                        href="/order-history"
-                        className="shrink-0 text-xs font-bold text-sky-300 hover:text-sky-200"
-                      >
-                        View history →
-                      </Link>
-
-                    </div>
-
-                  </div>
-
+                  <p className="mt-1 text-lg font-black text-white">
+                    {orders.length}
+                  </p>
                 </div>
 
+                <div className="rounded-xl border border-white/10 bg-white/[0.05] px-3 py-3">
+                  <p className="text-[9px] font-bold uppercase tracking-wide text-slate-500">
+                    Completed
+                  </p>
+
+                  <p className="mt-1 text-lg font-black text-white">
+                    {completedOrders}
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-white/10 bg-white/[0.05] px-3 py-3">
+                  <p className="text-[9px] font-bold uppercase tracking-wide text-slate-500">
+                    Spent
+                  </p>
+
+                  <p className="mt-1 truncate text-lg font-black text-white">
+                    ₦{totalSpent.toLocaleString()}
+                  </p>
+                </div>
               </div>
 
             </div>
@@ -360,312 +332,224 @@ https://proxysocials.com/signup
         {/* =========================
             QUICK ACTIONS
         ========================== */}
-        <section className="mt-7">
-
-          <div className="mb-3 px-1">
-            <h2 className="text-lg font-black text-slate-900 sm:text-xl">
-              Quick actions
-            </h2>
-
-            <p className="text-sm text-slate-500">
-              Get things done faster.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-
+        <section className="mt-5">
+          <div className="grid grid-cols-4 gap-2">
             {[
               {
                 href: '/services',
                 icon: '🛍️',
                 title: 'Services',
-                text: 'Browse marketplace',
                 bg: 'bg-sky-50',
               },
               {
                 href: '/fund-wallet',
                 icon: '💳',
-                title: 'Add Funds',
-                text: 'Top up wallet',
+                title: 'Fund',
                 bg: 'bg-emerald-50',
               },
               {
                 href: '/order-history',
                 icon: '🧾',
-                title: 'Activity',
-                text: 'View order history',
+                title: 'Orders',
                 bg: 'bg-violet-50',
               },
               {
                 href: '/profile',
                 icon: '👤',
                 title: 'Profile',
-                text: 'Manage account',
                 bg: 'bg-amber-50',
               },
             ].map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="group min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-md"
+                className="group flex min-w-0 flex-col items-center rounded-2xl border border-slate-200 bg-white px-2 py-3 shadow-sm transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-md"
               >
                 <div
-                  className={`flex h-11 w-11 items-center justify-center rounded-xl ${item.bg} text-xl`}
+                  className={`flex h-9 w-9 items-center justify-center rounded-xl ${item.bg} text-base`}
                 >
                   {item.icon}
                 </div>
 
-                <h3 className="mt-3 truncate text-sm font-black text-slate-900">
+                <span className="mt-1.5 truncate text-[11px] font-black text-slate-800">
                   {item.title}
-                </h3>
-
-                <p className="mt-1 truncate text-xs text-slate-500">
-                  {item.text}
-                </p>
+                </span>
               </Link>
             ))}
-
           </div>
         </section>
 
         {/* =========================
-            DISCOVER
+            REFER & EARN
         ========================== */}
-        <section className="mt-8">
+        <section className="relative mt-5 overflow-hidden rounded-[24px] bg-slate-950 shadow-xl shadow-slate-200">
 
-          <div className="mb-3 flex items-end justify-between gap-3 px-1">
+          <div className="pointer-events-none absolute -right-20 -top-20 h-48 w-48 rounded-full bg-violet-500/20 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-20 -left-16 h-40 w-40 rounded-full bg-sky-500/15 blur-3xl" />
 
-            <div>
-              <h2 className="text-lg font-black text-slate-900 sm:text-xl">
-                Discover
-              </h2>
+          <div className="relative p-4 sm:p-5">
 
-              <p className="text-sm text-slate-500">
-                Find something useful today.
-              </p>
-            </div>
-
-            <Link
-              href="/services"
-              className="shrink-0 text-xs font-black text-sky-600 sm:text-sm"
-            >
-              Browse all →
-            </Link>
-
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-3">
-
-            {/* MARKETPLACE */}
-            <Link
-              href="/services"
-              className="relative min-w-0 overflow-hidden rounded-2xl bg-gradient-to-br from-sky-600 to-cyan-500 p-5 text-white shadow-sm transition hover:shadow-md"
-            >
-              <div className="relative z-10">
-
-                <p className="text-xs font-bold uppercase tracking-wider text-sky-100">
-                  Marketplace
-                </p>
-
-                <h3 className="mt-2 text-xl font-black">
-                  Explore Services
-                </h3>
-
-                <p className="mt-1 max-w-[210px] text-xs leading-5 text-sky-50">
-                  Browse available social media services.
-                </p>
-
-              </div>
-
-              <span className="absolute -bottom-5 -right-2 text-7xl opacity-15">
-                🛍️
-              </span>
-            </Link>
-
-            {/* WALLET */}
-            <Link
-              href="/fund-wallet"
-              className="relative min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-emerald-200 hover:shadow-md"
-            >
-              <p className="text-xs font-bold uppercase tracking-wider text-emerald-600">
-                Wallet
-              </p>
-
-              <h3 className="mt-2 text-xl font-black text-slate-900">
-                Fund & Go
-              </h3>
-
-              <p className="mt-1 max-w-[220px] text-xs leading-5 text-slate-500">
-                Add funds and keep your wallet ready for your next purchase.
-              </p>
-
-              <span className="absolute -bottom-4 -right-1 text-6xl opacity-10">
-                💳
-              </span>
-            </Link>
-
-            {/* REFERRAL MINI CARD */}
-            <div className="relative min-w-0 overflow-hidden rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50 to-white p-5 shadow-sm">
-
-              <p className="text-xs font-bold uppercase tracking-wider text-violet-600">
-                Rewards
-              </p>
-
-              <h3 className="mt-2 text-xl font-black text-slate-900">
-                Refer & Earn
-              </h3>
-
-              <p className="mt-1 max-w-[220px] text-xs leading-5 text-slate-500">
-                Earn ₦1,500 for every successful referral.
-              </p>
-
-              <div className="mt-4 flex items-center justify-between gap-2">
-
-                <span className="text-sm font-black text-violet-700">
-                  {successfulReferrals}{' '}
-                  {successfulReferrals === 1
-                    ? 'referral'
-                    : 'referrals'}
-                </span>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    copyText(
-                      referralCode,
-                      'Referral code copied!'
-                    )
-                  }
-                  className="min-h-10 rounded-xl bg-slate-900 px-4 py-2 text-xs font-black text-white transition hover:bg-slate-800"
-                >
-                  Copy
-                </button>
-
-              </div>
-
-            </div>
-
-          </div>
-        </section>
-
-        {/* =========================
-            COMPACT REFER & EARN
-        ========================== */}
-        <section className="relative mt-8 overflow-hidden rounded-[26px] bg-slate-950 shadow-xl">
-
-          {/* BACKGROUND GLOW */}
-          <div className="absolute -right-24 -top-24 h-56 w-56 rounded-full bg-violet-500/20 blur-3xl" />
-
-          <div className="absolute -bottom-24 -left-20 h-48 w-48 rounded-full bg-sky-500/15 blur-3xl" />
-
-          <div className="relative p-4 sm:p-6 lg:p-7">
-
-            {/* HEADER */}
-            <div className="flex items-center justify-between gap-4">
-
+            {/* Header */}
+            <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-
                 <div className="flex items-center gap-2">
-                  <span className="text-xl">🎁</span>
+                  <span className="text-base">🎁</span>
 
-                  <p className="text-xs font-black uppercase tracking-wider text-violet-300">
+                  <p className="text-[10px] font-black uppercase tracking-wider text-violet-300">
                     Refer & Earn
                   </p>
                 </div>
 
-                <h2 className="mt-2 text-xl font-black tracking-tight text-white sm:text-2xl">
-                  Earn ₦1,500 per referral
+                <h2 className="mt-1 text-lg font-black tracking-tight text-white sm:text-xl">
+                  Earn ₦1,500
                 </h2>
 
-                <p className="mt-1 text-xs leading-5 text-slate-400 sm:text-sm">
-                  Invite friends and earn automatically when they join.
+                <p className="mt-0.5 text-[11px] leading-5 text-slate-400 sm:text-xs">
+                  Get rewarded after your friend's first purchase.
                 </p>
-
               </div>
 
-              {/* DESKTOP TOTAL */}
-              <div className="hidden shrink-0 text-right sm:block">
-
-                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                  Total earned
+              <div className="shrink-0 text-right">
+                <p className="text-[9px] font-bold uppercase tracking-wider text-slate-500">
+                  Earned
                 </p>
 
-                <p className="mt-1 text-xl font-black text-emerald-300">
+                <p className="mt-0.5 text-base font-black text-emerald-300">
                   ₦{totalReferralEarnings.toLocaleString()}
                 </p>
-
               </div>
-
             </div>
 
-            {/* MOBILE / DESKTOP STATS */}
-            <div className="mt-4 grid grid-cols-2 gap-2.5">
+            {/* Referral stats */}
+            <div className="mt-3 grid grid-cols-3 gap-2">
 
-              <div className="rounded-xl border border-white/10 bg-white/[0.06] px-3 py-3">
-
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                  Referrals
+              <div className="rounded-xl border border-white/10 bg-white/[0.06] px-2.5 py-2.5">
+                <p className="text-[9px] font-bold uppercase tracking-wide text-slate-500">
+                  Successful
                 </p>
 
-                <p className="mt-1 text-lg font-black text-white">
+                <p className="mt-1 text-base font-black text-emerald-300">
                   {successfulReferrals}
                 </p>
-
               </div>
 
-              <div className="rounded-xl border border-white/10 bg-white/[0.06] px-3 py-3">
-
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                  Total earned
+              <div className="rounded-xl border border-white/10 bg-white/[0.06] px-2.5 py-2.5">
+                <p className="text-[9px] font-bold uppercase tracking-wide text-slate-500">
+                  Pending
                 </p>
 
-                <p className="mt-1 text-lg font-black text-emerald-300">
+                <p className="mt-1 text-base font-black text-amber-300">
+                  {pendingReferrals}
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-white/10 bg-white/[0.06] px-2.5 py-2.5">
+                <p className="text-[9px] font-bold uppercase tracking-wide text-slate-500">
+                  Earned
+                </p>
+
+                <p className="mt-1 truncate text-base font-black text-white">
                   ₦{totalReferralEarnings.toLocaleString()}
                 </p>
-
               </div>
 
             </div>
 
-            {/* REFERRAL CODE */}
-            <div className="mt-3 rounded-xl bg-white p-3">
+            {/* Referral code */}
+            <div className="mt-3 flex items-center gap-2 rounded-xl bg-white p-2.5">
 
-              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                Your referral code
-              </p>
-
-              <div className="mt-1.5 flex min-w-0 items-center gap-2">
-
-                <p className="min-w-0 flex-1 truncate text-base font-black tracking-wide text-slate-900 sm:text-lg">
-                  {referralCode}
+              <div className="min-w-0 flex-1">
+                <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">
+                  Your referral code
                 </p>
 
-                <button
-                  type="button"
-                  aria-label="Copy referral code"
-                  onClick={() =>
-                    copyText(
-                      referralCode,
-                      'Referral code copied!'
-                    )
-                  }
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-sm text-white transition hover:bg-slate-800"
-                >
-                  📋
-                </button>
-
+                <p className="mt-0.5 truncate text-sm font-black tracking-wide text-slate-900">
+                  {referralCode}
+                </p>
               </div>
+
+              <button
+                type="button"
+                aria-label="Copy referral code"
+                onClick={() =>
+                  copyText(
+                    referralCode,
+                    'Referral code copied!'
+                  )
+                }
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-sm text-white transition hover:bg-slate-800"
+              >
+                📋
+              </button>
 
             </div>
 
-            {/* WHATSAPP */}
+            {/* WhatsApp */}
             <button
               type="button"
               onClick={shareReferral}
-              className="mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-black text-white transition hover:bg-emerald-400"
+              className="mt-2.5 flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 text-xs font-black text-white transition hover:bg-emerald-400"
             >
               💬 Share on WhatsApp
             </button>
+
+            {/* Referral activity */}
+            {referrals.length > 0 && (
+              <div className="mt-4 border-t border-white/10 pt-3">
+
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                    Referral activity
+                  </p>
+                </div>
+
+                <div className="space-y-1.5">
+                  {referrals.slice(0, 3).map((referral) => {
+                    const completed =
+                      String(referral.status || '').toLowerCase() ===
+                      'completed';
+
+                    return (
+                      <div
+                        key={referral.id}
+                        className="flex items-center justify-between gap-3 rounded-xl bg-white/[0.05] px-3 py-2.5"
+                      >
+                        <div className="flex min-w-0 items-center gap-2">
+                          <span className="text-xs">
+                            {completed ? '🟢' : '🟡'}
+                          </span>
+
+                          <div className="min-w-0">
+                            <p className="truncate text-[11px] font-bold text-slate-200">
+                              {completed
+                                ? 'Successful referral'
+                                : 'Waiting for first purchase'}
+                            </p>
+
+                            <p className="text-[9px] text-slate-500">
+                              {new Date(
+                                referral.created_at
+                              ).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+
+                        <span
+                          className={`shrink-0 text-[10px] font-black ${
+                            completed
+                              ? 'text-emerald-300'
+                              : 'text-amber-300'
+                          }`}
+                        >
+                          {completed ? '+₦1,500' : 'Pending'}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+              </div>
+            )}
 
           </div>
         </section>
@@ -673,25 +557,23 @@ https://proxysocials.com/signup
         {/* =========================
             RECENT ACTIVITY
         ========================== */}
-        <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+        <section className="mt-5 rounded-[22px] border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
 
           <div className="flex items-center justify-between gap-3">
 
-            <div className="min-w-0">
-
-              <h2 className="text-lg font-black text-slate-900 sm:text-xl">
+            <div>
+              <h2 className="text-base font-black text-slate-900">
                 Recent activity
               </h2>
 
-              <p className="mt-1 text-sm text-slate-500">
-                A quick look at your latest activity.
+              <p className="mt-0.5 text-[11px] text-slate-500">
+                Your latest purchases
               </p>
-
             </div>
 
             <Link
               href="/order-history"
-              className="shrink-0 text-xs font-black text-sky-600 sm:text-sm"
+              className="shrink-0 text-[11px] font-black text-sky-600"
             >
               View all →
             </Link>
@@ -699,66 +581,62 @@ https://proxysocials.com/signup
           </div>
 
           {recentOrders.length === 0 ? (
+            <div className="mt-4 rounded-xl bg-slate-50 px-4 py-6 text-center">
 
-            <div className="mt-6 rounded-2xl bg-slate-50 p-6 text-center">
-
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-white text-xl shadow-sm">
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-white text-lg shadow-sm">
                 🛍️
               </div>
 
-              <h3 className="mt-3 text-sm font-black text-slate-900">
+              <h3 className="mt-2 text-xs font-black text-slate-900">
                 Nothing here yet
               </h3>
 
-              <p className="mt-1 text-xs text-slate-500">
-                Your recent purchases will appear here.
+              <p className="mt-1 text-[10px] text-slate-500">
+                Your purchases will appear here.
               </p>
 
               <Link
                 href="/services"
-                className="mt-4 inline-flex min-h-10 items-center justify-center rounded-xl bg-sky-600 px-4 py-2 text-xs font-black text-white"
+                className="mt-3 inline-flex h-9 items-center justify-center rounded-lg bg-sky-600 px-3 text-[10px] font-black text-white"
               >
                 Browse Services
               </Link>
 
             </div>
-
           ) : (
-
-            <div className="mt-5 divide-y divide-slate-100">
+            <div className="mt-3 divide-y divide-slate-100">
 
               {recentOrders.map((order) => (
-
                 <div
                   key={order.id}
-                  className="flex min-w-0 items-center gap-3 py-4 first:pt-0 last:pb-0"
+                  className="flex min-w-0 items-center gap-2.5 py-3 first:pt-0 last:pb-0"
                 >
 
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-base">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sm">
                     🛍️
                   </div>
 
                   <div className="min-w-0 flex-1">
-
-                    <p className="truncate text-sm font-black text-slate-900">
+                    <p className="truncate text-xs font-black text-slate-900">
                       {order.services?.title || 'Service order'}
                     </p>
 
-                    <p className="mt-1 truncate text-xs text-slate-500">
+                    <p className="mt-0.5 truncate text-[10px] text-slate-500">
                       {order.services?.category || 'ProxySocials'} ·{' '}
-                      {new Date(order.created_at).toLocaleDateString()}
+                      {new Date(
+                        order.created_at
+                      ).toLocaleDateString()}
                     </p>
-
                   </div>
 
                   <div className="shrink-0 text-right">
 
-                    <p className="text-sm font-black text-slate-900">
+                    <p className="text-xs font-black text-slate-900">
                       ₦{Number(order.amount || 0).toLocaleString()}
                     </p>
 
                     <span
-                      className={`mt-1 inline-flex rounded-full px-2 py-1 text-[10px] font-black ${statusClasses(
+                      className={`mt-0.5 inline-flex rounded-full px-1.5 py-0.5 text-[8px] font-black ${statusClasses(
                         order.order_status
                       )}`}
                     >
@@ -768,11 +646,9 @@ https://proxysocials.com/signup
                   </div>
 
                 </div>
-
               ))}
 
             </div>
-
           )}
 
         </section>

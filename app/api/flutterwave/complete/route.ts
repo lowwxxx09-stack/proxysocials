@@ -10,6 +10,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
+
     const transactionId = String(body.transactionId || "");
     const txRef = String(body.txRef || "");
 
@@ -87,6 +88,8 @@ export async function POST(request: NextRequest) {
 
     const quantity = Math.max(1, Number(orderContent?.quantity || 1));
 
+    // Prevent the same Flutterwave transaction from creating
+    // multiple orders.
     const { data: existingOrder, error: existingOrderError } =
       await supabase
         .from("order")
@@ -122,6 +125,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get available stock.
     const { data: stockList, error: stockError } = await supabase
       .from("stock")
       .select("*")
@@ -134,7 +138,10 @@ export async function POST(request: NextRequest) {
 
     if (stockError) {
       return NextResponse.json(
-        { status: false, message: stockError.message },
+        {
+          status: false,
+          message: stockError.message,
+        },
         { status: 500 }
       );
     }
@@ -149,6 +156,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Prepare stock that will be delivered to the customer.
     const deliveredStock = stockList.map((stock) => ({
       id: stock.id,
       title: stock.title,
@@ -164,6 +172,7 @@ export async function POST(request: NextRequest) {
 
     const stockIds = stockList.map((stock) => stock.id);
 
+    // Mark stock as sold.
     const { error: updateError } = await supabase
       .from("stock")
       .update({
@@ -187,6 +196,7 @@ export async function POST(request: NextRequest) {
 
     const amount = Number(transaction.amount);
 
+    // Create the completed order.
     const { data: createdOrder, error: orderError } = await supabase
       .from("order")
       .insert({
@@ -210,11 +220,43 @@ export async function POST(request: NextRequest) {
 
     if (orderError) {
       return NextResponse.json(
-        { status: false, message: orderError.message },
+        {
+          status: false,
+          message: orderError.message,
+        },
         { status: 500 }
       );
     }
 
+    // ============================================================
+    // REFERRAL REWARD
+    //
+    // The referral reward is NOT given when the customer signs up.
+    // It is given only after their first successful/completed order.
+    //
+    // The database function also protects against duplicate rewards.
+    // ============================================================
+
+    try {
+      const { data: referralReward, error: referralError } =
+        await supabase.rpc("complete_referral_on_first_purchase", {
+          p_referred_user_id: metadata.userId,
+        });
+
+      if (referralError) {
+        console.error("REFERRAL REWARD ERROR:", referralError);
+      } else if (referralReward?.rewarded) {
+        console.log(
+          `Referral reward paid: ₦${referralReward.reward} to the referrer of ${metadata.userId}`
+        );
+      }
+    } catch (referralError) {
+      // Referral failure should never prevent the customer's
+      // successfully paid order from being completed.
+      console.error("REFERRAL REWARD EXCEPTION:", referralError);
+    }
+
+    // Send Telegram notification.
     try {
       const { data: serviceData } = await supabase
         .from("services")
