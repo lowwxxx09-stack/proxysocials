@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client';
-import CustomerMenu from '@/components/CustomerMenu';
-import TelegramBanner from '@/components/TelegramBanner';
-import TelegramSupportButton from '@/components/TelegramSupportButton';
-import Link from 'next/link';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
+import CustomerMenu from "@/components/CustomerMenu";
+import TelegramBanner from "@/components/TelegramBanner";
+import TelegramSupportButton from "@/components/TelegramSupportButton";
+import Link from "next/link";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -28,7 +28,7 @@ export default function Dashboard() {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      router.push('/login');
+      router.push("/login");
       return;
     }
 
@@ -39,52 +39,64 @@ export default function Dashboard() {
       { data: referralData, error: referralError },
     ] = await Promise.all([
       supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
         .single(),
 
       supabase
-        .from('wallets')
-        .select('id, user_id, balance')
-        .eq('user_id', user.id)
+        .from("wallets")
+        .select("id, user_id, balance")
+        .eq("user_id", user.id)
         .maybeSingle(),
 
       supabase
-        .from('order')
+        .from("order")
         .select(`*, services (title, category)`)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false }),
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false }),
 
       supabase
-        .from('referrals')
-        .select('id, reward_amount, status, created_at')
-        .eq('referrer_id', user.id)
-        .order('created_at', { ascending: false }),
+        .from("referrals")
+        .select("id, reward_amount, status, created_at")
+        .eq("referrer_id", user.id)
+        .order("created_at", { ascending: false }),
     ]);
 
     if (profileError) {
-      console.error('PROFILE FETCH ERROR:', profileError);
+      console.error(
+        "PROFILE FETCH ERROR:",
+        JSON.stringify(profileError, null, 2)
+      );
     } else {
       setProfile(profileData);
     }
 
     if (walletError) {
-      console.error('WALLET FETCH ERROR:', walletError);
+      console.error(
+        "WALLET FETCH ERROR:",
+        JSON.stringify(walletError, null, 2)
+      );
       setWallet(null);
     } else {
       setWallet(walletData);
     }
 
     if (orderError) {
-      console.error('ORDER FETCH ERROR:', orderError);
+      console.error(
+        "ORDER FETCH ERROR:",
+        JSON.stringify(orderError, null, 2)
+      );
       setOrders([]);
     } else {
       setOrders(orderData || []);
     }
 
     if (referralError) {
-      console.error('REFERRAL FETCH ERROR:', referralError);
+      console.error(
+        "REFERRAL FETCH ERROR:",
+        JSON.stringify(referralError, null, 2)
+      );
       setReferrals([]);
     } else {
       setReferrals(referralData || []);
@@ -125,7 +137,7 @@ export default function Dashboard() {
 
   const completedOrders = orders.filter(
     (order) =>
-      String(order.order_status || '').toLowerCase() === 'completed'
+      String(order.order_status || "").toLowerCase() === "completed"
   ).length;
 
   const totalSpent = orders.reduce(
@@ -133,22 +145,22 @@ export default function Dashboard() {
     0
   );
 
-  const referralCode = profile?.referral_code || 'None';
+  const referralCode = profile?.referral_code || "None";
 
   const successfulReferrals = referrals.filter(
     (referral) =>
-      String(referral.status || '').toLowerCase() === 'completed'
+      String(referral.status || "").toLowerCase() === "completed"
   ).length;
 
   const pendingReferrals = referrals.filter(
     (referral) =>
-      String(referral.status || '').toLowerCase() === 'pending'
+      String(referral.status || "").toLowerCase() === "pending"
   ).length;
 
   const totalReferralEarnings = referrals
     .filter(
       (referral) =>
-        String(referral.status || '').toLowerCase() === 'completed'
+        String(referral.status || "").toLowerCase() === "completed"
     )
     .reduce(
       (total, referral) =>
@@ -157,16 +169,16 @@ export default function Dashboard() {
     );
 
   function copyText(value: string, successMessage: string) {
-    if (!value || value === 'None') return;
+    if (!value || value === "None") return;
 
     navigator.clipboard
       .writeText(value)
       .then(() => alert(successMessage))
-      .catch(() => alert('Unable to copy. Please try again.'));
+      .catch(() => alert("Unable to copy. Please try again."));
   }
 
   function shareReferral() {
-    if (!referralCode || referralCode === 'None') return;
+    if (!referralCode || referralCode === "None") return;
 
     const message = `🚀 Join me on ProxySocials!
 
@@ -181,47 +193,47 @@ https://proxysocials.com/signup
       message
     )}`;
 
-    window.open(whatsappUrl, '_blank');
+    window.open(whatsappUrl, "_blank");
   }
 
   function formatStatus(status: string) {
-    const normalized = String(status || 'pending').toLowerCase();
+    const normalized = String(status || "pending").toLowerCase();
 
     if (
-      normalized === 'completed' ||
-      normalized === 'success'
+      normalized === "completed" ||
+      normalized === "success"
     ) {
-      return 'Completed';
+      return "Completed";
     }
 
     if (
-      normalized === 'rejected' ||
-      normalized === 'failed'
+      normalized === "rejected" ||
+      normalized === "failed"
     ) {
-      return 'Failed';
+      return "Failed";
     }
 
-    return 'Pending';
+    return "Pending";
   }
 
   function statusClasses(status: string) {
-    const normalized = String(status || '').toLowerCase();
+    const normalized = String(status || "").toLowerCase();
 
     if (
-      normalized === 'completed' ||
-      normalized === 'success'
+      normalized === "completed" ||
+      normalized === "success"
     ) {
-      return 'bg-emerald-50 text-emerald-700';
+      return "bg-emerald-50 text-emerald-700";
     }
 
     if (
-      normalized === 'rejected' ||
-      normalized === 'failed'
+      normalized === "rejected" ||
+      normalized === "failed"
     ) {
-      return 'bg-red-50 text-red-700';
+      return "bg-red-50 text-red-700";
     }
 
-    return 'bg-amber-50 text-amber-700';
+    return "bg-amber-50 text-amber-700";
   }
 
   return (
@@ -253,7 +265,7 @@ https://proxysocials.com/signup
                   </p>
 
                   <h1 className="mt-0.5 truncate text-xl font-black tracking-tight text-white sm:text-2xl">
-                    {profile?.full_name || 'User'} 👋
+                    {profile?.full_name || "User"} 👋
                   </h1>
                 </div>
 
@@ -336,28 +348,28 @@ https://proxysocials.com/signup
           <div className="grid grid-cols-4 gap-2">
             {[
               {
-                href: '/services',
-                icon: '🛍️',
-                title: 'Services',
-                bg: 'bg-sky-50',
+                href: "/services",
+                icon: "🛍️",
+                title: "Services",
+                bg: "bg-sky-50",
               },
               {
-                href: '/fund-wallet',
-                icon: '💳',
-                title: 'Fund',
-                bg: 'bg-emerald-50',
+                href: "/fund-wallet",
+                icon: "💳",
+                title: "Fund",
+                bg: "bg-emerald-50",
               },
               {
-                href: '/order-history',
-                icon: '🧾',
-                title: 'Orders',
-                bg: 'bg-violet-50',
+                href: "/order-history",
+                icon: "🧾",
+                title: "Orders",
+                bg: "bg-violet-50",
               },
               {
-                href: '/profile',
-                icon: '👤',
-                title: 'Profile',
-                bg: 'bg-amber-50',
+                href: "/profile",
+                icon: "👤",
+                title: "Profile",
+                bg: "bg-amber-50",
               },
             ].map((item) => (
               <Link
@@ -474,7 +486,7 @@ https://proxysocials.com/signup
                 onClick={() =>
                   copyText(
                     referralCode,
-                    'Referral code copied!'
+                    "Referral code copied!"
                   )
                 }
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-sm text-white transition hover:bg-slate-800"
@@ -506,8 +518,8 @@ https://proxysocials.com/signup
                 <div className="space-y-1.5">
                   {referrals.slice(0, 3).map((referral) => {
                     const completed =
-                      String(referral.status || '').toLowerCase() ===
-                      'completed';
+                      String(referral.status || "").toLowerCase() ===
+                      "completed";
 
                     return (
                       <div
@@ -516,14 +528,14 @@ https://proxysocials.com/signup
                       >
                         <div className="flex min-w-0 items-center gap-2">
                           <span className="text-xs">
-                            {completed ? '🟢' : '🟡'}
+                            {completed ? "🟢" : "🟡"}
                           </span>
 
                           <div className="min-w-0">
                             <p className="truncate text-[11px] font-bold text-slate-200">
                               {completed
-                                ? 'Successful referral'
-                                : 'Waiting for first purchase'}
+                                ? "Successful referral"
+                                : "Waiting for first purchase"}
                             </p>
 
                             <p className="text-[9px] text-slate-500">
@@ -537,11 +549,11 @@ https://proxysocials.com/signup
                         <span
                           className={`shrink-0 text-[10px] font-black ${
                             completed
-                              ? 'text-emerald-300'
-                              : 'text-amber-300'
+                              ? "text-emerald-300"
+                              : "text-amber-300"
                           }`}
                         >
-                          {completed ? '+₦1,500' : 'Pending'}
+                          {completed ? "+₦1,500" : "Pending"}
                         </span>
                       </div>
                     );
@@ -618,11 +630,11 @@ https://proxysocials.com/signup
 
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-xs font-black text-slate-900">
-                      {order.services?.title || 'Service order'}
+                      {order.services?.title || "Service order"}
                     </p>
 
                     <p className="mt-0.5 truncate text-[10px] text-slate-500">
-                      {order.services?.category || 'ProxySocials'} ·{' '}
+                      {order.services?.category || "ProxySocials"} ·{" "}
                       {new Date(
                         order.created_at
                       ).toLocaleDateString()}
