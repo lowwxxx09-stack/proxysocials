@@ -20,12 +20,42 @@ export default function OrderActions({
       })
       .eq("id", id);
 
-    setLoading(false);
-
     if (error) {
+      setLoading(false);
       alert(error.message);
       return;
     }
+
+    // Create notification when an order is rejected
+    if (status === "rejected") {
+      const { data: order, error: orderError } = await supabase
+        .from("order")
+        .select("user_id")
+        .eq("id", id)
+        .maybeSingle();
+
+      if (!orderError && order?.user_id) {
+        const { error: notificationError } = await supabase.rpc(
+          "create_notification",
+          {
+            p_user_id: order.user_id,
+            p_type: "order_rejected",
+            p_title: "Order rejected",
+            p_message:
+              "Your order has been rejected. Please check your order details or contact support.",
+          }
+        );
+
+        if (notificationError) {
+          console.error(
+            "ORDER REJECTION NOTIFICATION ERROR:",
+            notificationError
+          );
+        }
+      }
+    }
+
+    setLoading(false);
 
     window.location.reload();
   }

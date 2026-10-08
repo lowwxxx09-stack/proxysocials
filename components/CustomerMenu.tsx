@@ -7,9 +7,10 @@ import { useRouter, usePathname } from "next/navigation";
 
 export default function CustomerMenu() {
   const [open, setOpen] = useState(false);
+
   function closeMenu() {
-  setOpen(false);
-}
+    setOpen(false);
+  }
 
   const router = useRouter();
   const pathname = usePathname();
@@ -52,104 +53,122 @@ export default function CustomerMenu() {
 
           <div className="space-y-5">
 
+            {/* Dashboard */}
             <Link
-  href="/dashboard"
-  onClick={closeMenu}
-  className={`block font-bold text-lg transition ${
-    pathname === "/dashboard"
-      ? "text-sky-400"
-      : "hover:text-sky-400"
-  }`}
->
-  🏠 Dashboard
-</Link>
+              href="/dashboard"
+              onClick={closeMenu}
+              className={`block font-bold text-lg transition ${
+                pathname === "/dashboard"
+                  ? "text-sky-400"
+                  : "hover:text-sky-400"
+              }`}
+            >
+              🏠 Dashboard
+            </Link>
 
+            {/* Services */}
             <Link
-  href="/services"
-  onClick={closeMenu}
-  className={`block font-bold text-lg transition ${
-    pathname === "/services"
-      ? "text-sky-400"
-      : "hover:text-sky-400"
-  }`}
->
-  🛒 Services
-</Link>
+              href="/services"
+              onClick={closeMenu}
+              className={`block font-bold text-lg transition ${
+                pathname === "/services"
+                  ? "text-sky-400"
+                  : "hover:text-sky-400"
+              }`}
+            >
+              🛒 Services
+            </Link>
 
-<Link
-  href="/fund-wallet"
-  onClick={closeMenu}
-  className={`block font-bold text-lg transition ${
-    pathname === "/fund-wallet"
-      ? "text-sky-400"
-      : "hover:text-sky-400"
-  }`}
->
-  💰 Fund Wallet
-</Link>
-
+            {/* Fund Wallet */}
             <Link
-  href="/order-history"
-  onClick={closeMenu}
-  className={`block font-bold text-lg transition ${
-    pathname === "/order-history"
-      ? "text-sky-400"
-      : "hover:text-sky-400"
-  }`}
->
-  📦 Order History
-</Link>
+              href="/fund-wallet"
+              onClick={closeMenu}
+              className={`block font-bold text-lg transition ${
+                pathname === "/fund-wallet"
+                  ? "text-sky-400"
+                  : "hover:text-sky-400"
+              }`}
+            >
+              💰 Fund Wallet
+            </Link>
 
-<Link
-  href="/payment-history"
-  onClick={closeMenu}
-  className={`block font-bold text-lg transition ${
-    pathname === "/payment-history"
-      ? "text-sky-400"
-      : "hover:text-sky-400"
-  }`}
->
-  💳 Payment History
-</Link>
-
+            {/* Order History */}
             <Link
-  href="/profile"
-  onClick={closeMenu}
-  className={`block font-bold text-lg transition ${
-    pathname === "/profile"
-      ? "text-sky-400"
-      : "hover:text-sky-400"
-  }`}
->
-  👤 My Profile
-</Link>
+              href="/order-history"
+              onClick={closeMenu}
+              className={`block font-bold text-lg transition ${
+                pathname === "/order-history"
+                  ? "text-sky-400"
+                  : "hover:text-sky-400"
+              }`}
+            >
+              📦 Order History
+            </Link>
 
+            {/* Payment History */}
+            <Link
+              href="/payment-history"
+              onClick={closeMenu}
+              className={`block font-bold text-lg transition ${
+                pathname === "/payment-history"
+                  ? "text-sky-400"
+                  : "hover:text-sky-400"
+              }`}
+            >
+              💳 Payment History
+            </Link>
 
+            {/* My Profile */}
+            <Link
+              href="/profile"
+              onClick={closeMenu}
+              className={`block font-bold text-lg transition ${
+                pathname === "/profile"
+                  ? "text-sky-400"
+                  : "hover:text-sky-400"
+              }`}
+            >
+              👤 My Profile
+            </Link>
 
-<Link
-  href="/support"
-  onClick={closeMenu}
-  className={`block font-bold text-lg transition ${
-    pathname === "/support"
-      ? "text-sky-400"
-      : "hover:text-sky-400"
-  }`}
->
-  💬 Contact Support
-</Link>
+            {/* Join Community */}
+            <a
+              href="https://t.me/proxysocials"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={closeMenu}
+              className="flex items-center gap-2 font-bold text-lg text-sky-400 hover:text-sky-300 transition"
+            >
+              📢 Join Community
+            </a>
 
-<Link
-  href="/disclaimer"
-  onClick={closeMenu}
-  className={`block font-bold text-lg transition ${
-    pathname === "/disclaimer"
-      ? "text-sky-400"
-      : "hover:text-sky-400"
-  }`}
->
-  ⚠ Disclaimer
-</Link>
+            {/* Contact Support */}
+            <Link
+              href="/support"
+              onClick={closeMenu}
+              className={`block font-bold text-lg transition ${
+                pathname === "/support"
+                  ? "text-sky-400"
+                  : "hover:text-sky-400"
+              }`}
+            >
+              💬 Contact Support
+            </Link>
 
+            {/* Disclaimer */}
+            <Link
+              href="/disclaimer"
+              onClick={closeMenu}
+              className={`block font-bold text-lg transition ${
+                pathname === "/disclaimer"
+                  ? "text-sky-400"
+                  : "hover:text-sky-400"
+              }`}
+            >
+              ⚠ Disclaimer
+            </Link>
+
+            {/* Logout */}
             <button
               onClick={logout}
               className="text-red-400 font-bold text-lg"
