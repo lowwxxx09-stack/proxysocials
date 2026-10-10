@@ -25,154 +25,117 @@ function PaymentCallbackContent() {
   useEffect(() => {
     if (processingRef.current) return;
 
-    if (transactionId === null || txRef === null) {
-      setMessage("No Flutterwave transaction information found.");
+    if (!transactionId || !txRef) {
+      setMessage(
+        "No Flutterwave transaction information found. If you completed payment, contact support with your payment reference."
+      );
       return;
     }
 
-    // Explicitly create strings so TypeScript knows these
-    // values cannot be null inside the async function.
-    const verifiedTransactionId: string = transactionId;
-    const verifiedTxRef: string = txRef;
+    if (status === "cancelled" || status === "failed") {
+      setMessage("Payment was cancelled or failed.");
+      return;
+    }
+
+    const verifiedTransactionId = transactionId;
+    const verifiedTxRef = txRef;
 
     processingRef.current = true;
 
+    let redirectTimer: ReturnType<typeof setTimeout> | undefined;
+
     async function processPayment() {
       try {
-        if (status === "cancelled" || status === "failed") {
-          setMessage("Payment was cancelled or failed.");
-          return;
-        }
+        let endpoint: string;
+        let successMessage: string;
+        let destination: string;
 
-        const verifyResponse = await fetch(
-          `/api/flutterwave/verify?transaction_id=${encodeURIComponent(
-            verifiedTransactionId
-          )}&tx_ref=${encodeURIComponent(verifiedTxRef)}`,
-          {
-            method: "GET",
-            cache: "no-store",
-          }
-        );
-
-        const verifyData = await verifyResponse.json();
-
-        if (!verifyData.status) {
+        // The prefix only selects which server endpoint to call.
+        // Each endpoint must independently validate the trusted
+        // payment_intents record and Flutterwave transaction.
+        if (verifiedTxRef.startsWith("PROXY-ORDER-")) {
+          endpoint = "/api/flutterwave/complete";
+          successMessage =
+            "Payment successful! Your order has been processed. Redirecting...";
+          destination = "/order-history";
+        } else if (verifiedTxRef.startsWith("PROXY-WALLET-")) {
+          endpoint = "/api/wallet/credit";
+          successMessage =
+            "Wallet funded successfully! Redirecting to your dashboard...";
+          destination = "/dashboard";
+        } else {
           setMessage(
-            verifyData.message || "Payment verification failed."
+            "Unrecognized payment reference. Please contact support if your payment was successful."
           );
           return;
         }
 
-        const paymentType =
-          verifyData.data?.meta?.payment_type;
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          cache: "no-store",
+          body: JSON.stringify({
+            transactionId: verifiedTransactionId,
+            txRef: verifiedTxRef,
+          }),
+        });
 
-        if (paymentType === "order") {
-          const completeResponse = await fetch(
-            "/api/flutterwave/complete",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                transactionId: verifiedTransactionId,
-                txRef: verifiedTxRef,
-              }),
-            }
-          );
+        const result = await response.json();
 
-          const completeData = await completeResponse.json();
-
-          if (!completeData.status) {
-            setMessage(
-              completeData.message || "Order creation failed."
-            );
-            return;
-          }
-
+        if (!response.ok || !result.status) {
           setMessage(
-            "Payment successful! Order created 🎉 Redirecting to your orders..."
+            result.message ||
+              "We couldn't finish processing your payment. Please contact support with your payment reference."
           );
-
-          setTimeout(() => {
-            router.push("/order-history");
-            router.refresh();
-          }, 2000);
-
           return;
         }
 
-        if (paymentType === "wallet") {
-          const metadataUserId =
-            verifyData.data?.meta?.userId;
-
-          if (!metadataUserId) {
-            setMessage(
-              "Payment user information is missing."
-            );
-            return;
-          }
-
-          const walletResponse = await fetch(
-            "/api/wallet/credit",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                userId: metadataUserId,
-                transactionId: verifiedTransactionId,
-                txRef: verifiedTxRef,
-              }),
-              cache: "no-store",
-            }
-          );
-
-          const walletData = await walletResponse.json();
-
-          if (!walletData.status) {
-            setMessage(
-              walletData.message || "Unable to credit wallet."
-            );
-            return;
-          }
-
+        if (endpoint === "/api/wallet/credit") {
           setMessage(
-            walletData.alreadyCredited
-              ? "This payment has already been credited to your wallet."
-              : "Wallet funded successfully! 🎉"
+            result.alreadyCredited
+              ? "This payment has already been credited to your wallet. Redirecting..."
+              : successMessage
           );
-
-          setTimeout(() => {
-            router.push("/dashboard");
-            router.refresh();
-          }, 2000);
-
-          return;
+        } else {
+          setMessage(
+            result.message === "Payment already processed."
+              ? "This order has already been processed. Redirecting..."
+              : successMessage
+          );
         }
 
-        setMessage("Unable to determine payment type.");
+        redirectTimer = setTimeout(() => {
+          router.push(destination);
+          router.refresh();
+        }, 2000);
       } catch (error) {
-        console.error("Payment processing error:", error);
+        console.error("Payment callback processing error:", error);
 
         setMessage(
-          "Something went wrong while processing payment."
+          "Something went wrong while processing your payment. Please contact support with your payment reference."
         );
       }
     }
 
-    processPayment();
+    void processPayment();
+
+    return () => {
+      if (redirectTimer) clearTimeout(redirectTimer);
+    };
   }, [router, status, transactionId, txRef]);
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-sky-50">
-      <div className="bg-white rounded-2xl shadow-lg p-8 text-center max-w-lg">
+    <main className="min-h-screen flex items-center justify-center bg-sky-50 px-4">
+      <div className="w-full max-w-lg rounded-2xl bg-white p-8 text-center shadow-lg">
         <h1 className="text-3xl font-bold text-sky-700">
           Payment Status
         </h1>
 
-        <p className="mt-5 text-lg">{message}</p>
+        <p className="mt-5 text-lg text-slate-700">
+          {message}
+        </p>
       </div>
     </main>
   );
@@ -182,8 +145,10 @@ export default function PaymentCallbackPage() {
   return (
     <Suspense
       fallback={
-        <main className="min-h-screen flex items-center justify-center">
-          Loading...
+        <main className="flex min-h-screen items-center justify-center bg-sky-50">
+          <p className="text-slate-700">
+            Loading payment status...
+          </p>
         </main>
       }
     >
