@@ -1,48 +1,267 @@
+
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
+type Service = {
+  id: string;
+  title: string;
+  category?: string | null;
+};
+
+type ParsedItem = {
+  line: number;
+  raw: string;
+  fields: string[];
+  username: string;
+  password: string;
+  twofa: string;
+  email: string;
+  recovery_email: string;
+};
+
+type ParseResult = {
+  items: ParsedItem[];
+  invalidLines: number[];
+  delimiter: string;
+  fieldCount: number;
+  ambiguous: boolean;
+};
+
+const DELIMITERS = ["||", "\t", "|", ",", ";", ":"];
+
+function splitLine(line: string, delimiter: string): string[] {
+  if (delimiter === ",") {
+    const fields: string[] = [];
+    let field = "";
+    let quoted = false;
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+
+      if (char === '"') {
+        if (quoted && line[i + 1] === '"') {
+          field += '"';
+          i++;
+        } else {
+          quoted = !quoted;
+        }
+      } else if (char === "," && !quoted) {
+        fields.push(field.trim());
+        field = "";
+      } else {
+        field += char;
+      }
+    }
+
+    fields.push(field.trim());
+    return fields;
+  }
+
+  return line.split(delimiter).map((field) => field.trim());
+}
+
+function removeTrailingEmptyFields(fields: string[]): string[] {
+  const result = [...fields];
+
+  while (result.length > 0 && result[result.length - 1] === "") {
+    result.pop();
+  }
+
+  return result;
+}
+
+function detectFormat(lines: string[]) {
+  const candidates = DELIMITERS.map((delimiter) => {
+    const rows = lines.map((line) =>
+      removeTrailingEmptyFields(splitLine(line, delimiter))
+    );
+
+    const counts = rows.map((row) => row.length);
+    const fieldCount = counts[0] ?? 0;
+    const consistent = counts.every((count) => count === fieldCount);
+    const valid = fieldCount >= 2 && counts.every((count) => count >= 2);
+
+    return {
+      delimiter,
+      rows,
+      fieldCount,
+      consistent,
+      valid,
+      score:
+        (valid ? 1000 : 0) +
+        (consistent ? 500 : 0) +
+        (fieldCount >= 2 ? fieldCount * 10 : 0) +
+        delimiter.length,
+    };
+  }).filter((candidate) => candidate.valid);
+
+  candidates.sort((a, b) => b.score - a.score);
+
+  if (!candidates.length) return null;
+
+  const best = candidates[0];
+
+  // Flag a tie only when equally scored candidates disagree on
+  // how many fields a record contains.
+  const tiedCandidate = candidates.find(
+    (candidate, index) =>
+      index > 0 &&
+      candidate.score === best.score &&
+      candidate.fieldCount !== best.fieldCount
+  );
+
+  return {
+    ...best,
+    ambiguous: !best.consistent || Boolean(tiedCandidate),
+  };
+}
+
+function parseStockInput(input: string): ParseResult {
+  const lines = input
+    .split(/\r?\n/)
+    .map((raw, index) => ({
+      raw: raw.trim(),
+      line: index + 1,
+    }))
+    .filter((entry) => entry.raw.length > 0);
+
+  if (!lines.length) {
+    return {
+      items: [],
+      invalidLines: [],
+      delimiter: "",
+      fieldCount: 0,
+      ambiguous: false,
+    };
+  }
+
+  const detected = detectFormat(lines.map((entry) => entry.raw));
+
+  if (!detected) {
+    return {
+      items: [],
+      invalidLines: lines.map((entry) => entry.line),
+      delimiter: "",
+      fieldCount: 0,
+      ambiguous: true,
+    };
+  }
+
+  const items: ParsedItem[] = [];
+  const invalidLines: number[] = [];
+
+  lines.forEach(({ raw, line }, index) => {
+    const fields = detected.rows[index];
+
+    if (
+      fields.length < 2 ||
+      fields.some((field) => field.length === 0)
+    ) {
+      invalidLines.push(line);
+      return;
+    }
+
+    const username = fields[0];
+    const password = fields[1];
+
+    // Preserve every original field, including fields beyond
+    // the standard stock columns.
+    let twofa = "";
+    let email = "";
+    let recovery_email = "";
+
+    if (fields.length === 3) {
+      email = fields[2];
+    } else if (fields.length >= 4) {
+      twofa = fields[2];
+      email = fields[3] ?? "";
+      recovery_email = fields[4] ?? "";
+    }
+
+    items.push({
+      line,
+      raw,
+      fields: [...fields],
+      username,
+      password,
+      twofa,
+      email,
+      recovery_email,
+    });
+  });
+
+  return {
+    items,
+    invalidLines,
+    delimiter: detected.delimiter,
+    fieldCount: detected.fieldCount,
+    ambiguous: detected.ambiguous,
+  };
+}
+
+function delimiterLabel(delimiter: string) {
+  if (delimiter === "\t") return "Tab";
+  if (delimiter === "||") return "Double pipe (||)";
+  if (delimiter === "|") return "Single pipe (|)";
+  if (delimiter === ",") return "Comma (,)";
+  if (delimiter === ";") return "Semicolon (;)";
+  if (delimiter === ":") return "Colon (:)";
+  return "Unknown";
+}
+
 export default function AdminStockPage() {
-  const [services, setServices] = useState<any[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
   const [stock, setStock] = useState<any[]>([]);
-  const [selectedService, setSelectedService] = useState<any>(null);
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [stockData, setStockData] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState("");
 
+  const parsed = useMemo(() => parseStockInput(stockData), [stockData]);
+
   const loadData = useCallback(async () => {
-    const [
-      { data: servicesData, error: servicesError },
-      { data: stockRows, error: stockError },
-    ] = await Promise.all([
-      supabase.from("services").select("*").order("title"),
-      supabase
-        .from("stock")
-        .select("*")
-        .order("created_at", { ascending: false }),
-    ]);
+    setLoading(true);
 
-    if (servicesError) {
-      console.error("Error loading services:", servicesError.message);
-    } else {
-      const nextServices = servicesData ?? [];
-      setServices(nextServices);
+    try {
+      const [
+        { data: servicesData, error: servicesError },
+        { data: stockRows, error: stockError },
+      ] = await Promise.all([
+        supabase.from("services").select("*").order("title"),
+        supabase.from("stock").select("*").order("created_at", {
+          ascending: false,
+        }),
+      ]);
 
-      setSelectedService((current: any) => {
-        if (!current) return null;
-        return nextServices.find((s) => s.id === current.id) ?? null;
-      });
+      if (servicesError) {
+        console.error("Error loading services:", servicesError.message);
+        alert("Unable to load services. Please refresh and try again.");
+      } else {
+        const nextServices = (servicesData ?? []) as Service[];
+
+        setServices(nextServices);
+        setSelectedService((current) =>
+          current
+            ? nextServices.find((service) => service.id === current.id) ?? null
+            : null
+        );
+      }
+
+      if (stockError) {
+        console.error("Error loading stock:", stockError.message);
+        alert("Unable to load inventory. Please refresh and try again.");
+      } else {
+        setStock(stockRows ?? []);
+      }
+    } catch (error) {
+      console.error("Inventory loading failed:", error);
+      alert("Something went wrong while loading inventory.");
+    } finally {
+      setLoading(false);
     }
-
-    if (stockError) {
-      console.error("Error loading stock:", stockError.message);
-    } else {
-      setStock(stockRows ?? []);
-    }
-
-    setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -57,65 +276,70 @@ export default function AdminStockPage() {
       return;
     }
 
-    const rows = stockData
-      .split("\n")
-      .map((row) => row.trim())
-      .filter(Boolean);
-
-    if (rows.length === 0) {
-      alert("Please enter at least one account.");
+    if (!parsed.items.length) {
+      alert("No valid stock records detected. Check the pasted data.");
       return;
     }
 
-    const stockRows = rows.map((row) => {
-      const [
-        username,
-        password,
-        twofa,
-        email,
-        recovery_email,
-      ] = row.split(",");
-
-      return {
-        service_id: selectedService.id,
-        username: username?.trim(),
-        password: password?.trim(),
-        twofa: twofa?.trim(),
-        email: email?.trim(),
-        recovery_email: recovery_email?.trim(),
-        is_used: false,
-        status: "available",
-      };
-    });
-
-    const invalidRow = stockRows.find(
-      (row) => !row.username || !row.password
-    );
-
-    if (invalidRow) {
+    if (parsed.ambiguous) {
       alert(
-        "Every row must contain at least a username and password. Please check your data."
+        "The format is ambiguous or inconsistent. Use one separator and the same number of fields on every line."
       );
       return;
     }
 
+    if (parsed.invalidLines.length > 0) {
+      alert(
+        `Please correct these lines before uploading: ${parsed.invalidLines.join(", ")}`
+      );
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Upload ${parsed.items.length} stock item(s) to "${selectedService.title}"?`
+    );
+
+    if (!confirmed) return;
+
+    const rows = parsed.items.map((item) => ({
+      service_id: selectedService.id,
+      username: item.username,
+      password: item.password,
+      twofa: item.twofa || null,
+      email: item.email || null,
+      recovery_email: item.recovery_email || null,
+      stock_data: {
+        raw: item.raw,
+        delimiter: parsed.delimiter,
+        fields: item.fields,
+        extra_fields: item.fields.slice(4),
+      },
+      is_used: false,
+      status: "available",
+    }));
+
     setSaving(true);
 
     try {
-      const { error } = await supabase
-        .from("stock")
-        .insert(stockRows);
+      const batchSize = 100;
 
-      if (error) {
-        alert(error.message);
-        return;
+      for (let i = 0; i < rows.length; i += batchSize) {
+        const batch = rows.slice(i, i + batchSize);
+        const { error } = await supabase.from("stock").insert(batch);
+
+        if (error) {
+          console.error("Stock upload failed:", error.message);
+          alert(`Upload failed: ${error.message}`);
+          await loadData();
+          return;
+        }
       }
 
       setStockData("");
       await loadData();
 
       alert(
-        `${stockRows.length} account${stockRows.length === 1 ? "" : "s"} uploaded successfully.`
+        `${rows.length} stock item${rows.length === 1 ? "" : "s"} uploaded successfully.`
       );
     } catch (error) {
       console.error("Stock upload failed:", error);
@@ -128,11 +352,14 @@ export default function AdminStockPage() {
   const totalStock = stock.length;
 
   const availableStock = stock.filter(
-    (item) => item.is_used === false
+    (item) =>
+      item.is_used === false &&
+      item.status === "available" &&
+      item.assigned_to == null
   ).length;
 
   const usedStock = stock.filter(
-    (item) => item.is_used === true
+    (item) => item.is_used === true || item.status === "sold"
   ).length;
 
   const filteredServices = services.filter((service) =>
@@ -145,7 +372,9 @@ export default function AdminStockPage() {
     return stock.filter(
       (item) =>
         item.service_id === serviceId &&
-        item.is_used === false
+        item.is_used === false &&
+        item.status === "available" &&
+        item.assigned_to == null
     ).length;
   }
 
@@ -153,14 +382,13 @@ export default function AdminStockPage() {
     return stock.filter(
       (item) =>
         item.service_id === serviceId &&
-        item.is_used === true
+        (item.is_used === true || item.status === "sold")
     ).length;
   }
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
       <div className="mx-auto max-w-7xl">
-        {/* Header */}
         <header className="mb-8 border-b border-slate-200 pb-6">
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
             Management / Inventory
@@ -171,10 +399,9 @@ export default function AdminStockPage() {
               <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
                 Stock Manager
               </h1>
-
               <p className="mt-2 max-w-xl text-sm leading-6 text-slate-500">
-                Upload account inventory, monitor availability, and
-                manage stock across your services.
+                Paste supplier stock in common formats, preview the detected
+                records, and manage inventory across your services.
               </p>
             </div>
 
@@ -190,7 +417,6 @@ export default function AdminStockPage() {
           </div>
         </header>
 
-        {/* Summary cards */}
         <section
           aria-label="Inventory summary"
           className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3"
@@ -206,14 +432,14 @@ export default function AdminStockPage() {
             {
               label: "Available",
               value: availableStock,
-              description: "Not marked as used",
+              description: "Ready for delivery",
               symbol: "02",
               color: "bg-emerald-700",
             },
             {
               label: "Used",
               value: usedStock,
-              description: "Marked as used",
+              description: "Marked as sold or used",
               symbol: "03",
               color: "bg-slate-500",
             },
@@ -226,7 +452,6 @@ export default function AdminStockPage() {
                 <p className="text-sm font-medium text-slate-500">
                   {metric.label}
                 </p>
-
                 <span
                   className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-xs font-bold text-white ${metric.color}`}
                 >
@@ -249,27 +474,26 @@ export default function AdminStockPage() {
           ))}
         </section>
 
-        {/* Upload and service selection */}
         <section className="mb-10">
           <div className="mb-4">
             <h2 className="text-lg font-semibold text-slate-900">
               Inventory management
             </h2>
             <p className="mt-1 text-sm text-slate-500">
-              Select a service and upload its account details.
+              Select a service, paste stock, and review the preview before
+              importing.
             </p>
           </div>
 
           <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-5">
-            {/* Service selection */}
             <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm lg:col-span-2">
               <div className="border-b border-slate-200 px-5 py-4">
                 <h3 className="font-semibold text-slate-900">
                   Select service
                 </h3>
                 <p className="mt-1 text-xs text-slate-500">
-                  {services.length} service
-                  {services.length === 1 ? "" : "s"} available
+                  {services.length} service{services.length === 1 ? "" : "s"}{" "}
+                  available
                 </p>
               </div>
 
@@ -277,7 +501,7 @@ export default function AdminStockPage() {
                 <input
                   type="search"
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={(event) => setSearch(event.target.value)}
                   placeholder="Search services..."
                   className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100"
                 />
@@ -294,8 +518,7 @@ export default function AdminStockPage() {
                   </p>
                 ) : (
                   filteredServices.map((service) => {
-                    const isSelected =
-                      selectedService?.id === service.id;
+                    const isSelected = selectedService?.id === service.id;
 
                     return (
                       <button
@@ -333,14 +556,12 @@ export default function AdminStockPage() {
               </div>
             </div>
 
-            {/* Bulk upload */}
             <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm lg:col-span-3">
               <div className="border-b border-slate-200 px-5 py-4">
-                <h3 className="font-semibold text-slate-900">
-                  Bulk upload
-                </h3>
+                <h3 className="font-semibold text-slate-900">Paste stock</h3>
                 <p className="mt-1 text-xs text-slate-500">
-                  Add multiple accounts in one operation.
+                  One stock item per line. Common separators are detected
+                  automatically.
                 </p>
               </div>
 
@@ -370,35 +591,126 @@ export default function AdminStockPage() {
                     <textarea
                       id="stock-data"
                       value={stockData}
-                      onChange={(e) => setStockData(e.target.value)}
+                      onChange={(event) => setStockData(event.target.value)}
                       rows={10}
                       spellCheck={false}
                       className="w-full resize-y rounded-lg border border-slate-200 bg-white p-3 font-mono text-xs leading-6 text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-100 sm:text-sm"
-                      placeholder={`username,password,2fa,email,recovery_email
-john123,password123,ABC123,john@gmail.com,recovery@gmail.com
-mary456,password456,XYZ987,mary@gmail.com,recovery2@gmail.com`}
+                      placeholder={`user1||password1||email1@example.com
+user2||password2||email2@example.com
+user3||password3||email3@example.com`}
                     />
 
-                    <div className="mt-3 flex flex-col gap-1 text-xs leading-5 text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
                       <span>
-                        {stockData.split("\n").filter((row) => row.trim()).length}{" "}
-                        non-empty rows
+                        {
+                          stockData
+                            .split(/\r?\n/)
+                            .filter((line) => line.trim()).length
+                        }{" "}
+                        non-empty lines
                       </span>
-                      <span>One account per line · Comma-separated</span>
+
+                      {parsed.delimiter && (
+                        <span>
+                          Detected: {delimiterLabel(parsed.delimiter)}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <h4 className="text-sm font-semibold text-slate-900">
+                          Import preview
+                        </h4>
+                        <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800">
+                          {parsed.items.length} detected
+                        </span>
+                      </div>
+
+                      <p className="mt-2 text-xs leading-5 text-slate-500">
+                        {parsed.fieldCount
+                          ? `${parsed.fieldCount} fields detected per record.`
+                          : "Paste records to detect their format."}
+                      </p>
+
+                      {parsed.ambiguous && stockData.trim() && (
+                        <p className="mt-3 rounded-md bg-amber-50 p-3 text-xs leading-5 text-amber-800">
+                          The format is ambiguous or inconsistent. Use one
+                          separator and the same number of fields on every
+                          line.
+                        </p>
+                      )}
+
+                      {parsed.invalidLines.length > 0 && (
+                        <p className="mt-3 rounded-md bg-red-50 p-3 text-xs leading-5 text-red-700">
+                          Invalid lines: {parsed.invalidLines.join(", ")}
+                        </p>
+                      )}
+
+                      {parsed.items.length > 0 && (
+                        <div className="mt-3 overflow-x-auto">
+                          <table className="w-full text-left text-xs">
+                            <thead>
+                              <tr className="border-b border-slate-200 text-slate-500">
+                                <th className="px-2 py-2">Line</th>
+                                <th className="px-2 py-2">Username</th>
+                                <th className="px-2 py-2">Password</th>
+                                <th className="px-2 py-2">Email</th>
+                                <th className="px-2 py-2">Extra fields</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {parsed.items.slice(0, 5).map((item) => (
+                                <tr
+                                  key={item.line}
+                                  className="border-b border-slate-100"
+                                >
+                                  <td className="px-2 py-2">{item.line}</td>
+                                  <td className="max-w-40 truncate px-2 py-2">
+                                    {item.username}
+                                  </td>
+                                  <td className="px-2 py-2">Detected</td>
+                                  <td className="max-w-40 truncate px-2 py-2">
+                                    {item.email || "—"}
+                                  </td>
+                                  <td className="px-2 py-2">
+                                    {item.fields.length > 4
+                                      ? item.fields.slice(4).join(", ")
+                                      : "—"}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+
+                          {parsed.items.length > 5 && (
+                            <p className="mt-2 text-xs text-slate-500">
+                              Showing the first 5 of {parsed.items.length}{" "}
+                              records.
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     <button
                       type="button"
                       onClick={saveStock}
-                      disabled={saving || loading || !stockData.trim()}
+                      disabled={
+                        saving ||
+                        loading ||
+                        !stockData.trim() ||
+                        !parsed.items.length ||
+                        parsed.invalidLines.length > 0 ||
+                        parsed.ambiguous
+                      }
                       className="mt-5 flex w-full items-center justify-center rounded-lg bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {saving ? "Uploading accounts..." : "Upload stock"}
                     </button>
 
                     <p className="mt-3 text-center text-xs leading-5 text-slate-400">
-                      Check your data before uploading. Account details
-                      will be saved to the selected service.
+                      Review the detected records before uploading.
                     </p>
                   </>
                 ) : (
@@ -406,14 +718,12 @@ mary456,password456,XYZ987,mary@gmail.com,recovery2@gmail.com`}
                     <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-xl text-slate-500">
                       +
                     </div>
-
                     <h4 className="mt-4 font-semibold text-slate-800">
                       Choose a service first
                     </h4>
-
                     <p className="mt-2 max-w-xs text-sm leading-6 text-slate-500">
-                      Select a service from the panel on the left to
-                      start uploading its inventory.
+                      Select a service from the panel on the left to start
+                      adding its inventory.
                     </p>
                   </div>
                 )}
@@ -422,7 +732,6 @@ mary456,password456,XYZ987,mary@gmail.com,recovery2@gmail.com`}
           </div>
         </section>
 
-        {/* Current inventory */}
         <section>
           <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -433,7 +742,6 @@ mary456,password456,XYZ987,mary@gmail.com,recovery2@gmail.com`}
                 Stock availability grouped by service.
               </p>
             </div>
-
             <p className="text-xs text-slate-400">
               {services.length} services tracked
             </p>
@@ -445,9 +753,7 @@ mary456,password456,XYZ987,mary@gmail.com,recovery2@gmail.com`}
             </div>
           ) : services.length === 0 ? (
             <div className="rounded-xl border border-slate-200 bg-white px-6 py-12 text-center">
-              <p className="font-medium text-slate-800">
-                No services found
-              </p>
+              <p className="font-medium text-slate-800">No services found</p>
               <p className="mt-1 text-sm text-slate-500">
                 Add services before uploading stock.
               </p>
@@ -457,8 +763,7 @@ mary456,password456,XYZ987,mary@gmail.com,recovery2@gmail.com`}
               {services.map((service) => {
                 const available = getAvailableCount(service.id);
                 const used = getUsedCount(service.id);
-                const isSelected =
-                  selectedService?.id === service.id;
+                const isSelected = selectedService?.id === service.id;
 
                 return (
                   <button
@@ -494,18 +799,13 @@ mary456,password456,XYZ987,mary@gmail.com,recovery2@gmail.com`}
 
                     <div className="mt-6 grid grid-cols-2 gap-3">
                       <div className="rounded-lg bg-slate-50 p-3">
-                        <p className="text-xs text-slate-500">
-                          Available
-                        </p>
+                        <p className="text-xs text-slate-500">Available</p>
                         <p className="mt-1 text-2xl font-bold text-slate-900">
                           {available.toLocaleString()}
                         </p>
                       </div>
-
                       <div className="rounded-lg bg-slate-50 p-3">
-                        <p className="text-xs text-slate-500">
-                          Used
-                        </p>
+                        <p className="text-xs text-slate-500">Used</p>
                         <p className="mt-1 text-2xl font-bold text-slate-700">
                           {used.toLocaleString()}
                         </p>
