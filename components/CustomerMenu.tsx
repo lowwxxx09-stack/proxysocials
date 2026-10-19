@@ -46,13 +46,11 @@ export default function CustomerMenu() {
         }`}
       >
         <div className="p-6">
-
           <h2 className="text-3xl font-black text-sky-400 mb-8">
             ProxySocials
           </h2>
 
           <div className="space-y-5">
-
             {/* Dashboard */}
             <Link
               href="/dashboard"
@@ -60,7 +58,7 @@ export default function CustomerMenu() {
               className={`block font-bold text-lg transition ${
                 pathname === "/dashboard"
                   ? "text-sky-400"
-                  : "hover:text-sky-400"
+                  : "text-white hover:text-sky-400"
               }`}
             >
               🏠 Dashboard
@@ -73,11 +71,22 @@ export default function CustomerMenu() {
               className={`block font-bold text-lg transition ${
                 pathname === "/services"
                   ? "text-sky-400"
-                  : "hover:text-sky-400"
+                  : "text-white hover:text-sky-400"
               }`}
             >
               🛒 Services
             </Link>
+
+            {/* Purchase Verification Numbers */}
+            <a
+              href="https://proxy-verify.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={closeMenu}
+              className="flex items-center gap-2 font-bold text-lg text-white hover:text-sky-400 transition"
+            >
+              📱 Purchase Verification Numbers ↗
+            </a>
 
             {/* Fund Wallet */}
             <Link
@@ -86,7 +95,7 @@ export default function CustomerMenu() {
               className={`block font-bold text-lg transition ${
                 pathname === "/fund-wallet"
                   ? "text-sky-400"
-                  : "hover:text-sky-400"
+                  : "text-white hover:text-sky-400"
               }`}
             >
               💰 Fund Wallet
@@ -99,7 +108,7 @@ export default function CustomerMenu() {
               className={`block font-bold text-lg transition ${
                 pathname === "/order-history"
                   ? "text-sky-400"
-                  : "hover:text-sky-400"
+                  : "text-white hover:text-sky-400"
               }`}
             >
               📦 Order History
@@ -112,7 +121,7 @@ export default function CustomerMenu() {
               className={`block font-bold text-lg transition ${
                 pathname === "/payment-history"
                   ? "text-sky-400"
-                  : "hover:text-sky-400"
+                  : "text-white hover:text-sky-400"
               }`}
             >
               💳 Payment History
@@ -125,7 +134,7 @@ export default function CustomerMenu() {
               className={`block font-bold text-lg transition ${
                 pathname === "/profile"
                   ? "text-sky-400"
-                  : "hover:text-sky-400"
+                  : "text-white hover:text-sky-400"
               }`}
             >
               👤 My Profile
@@ -137,7 +146,7 @@ export default function CustomerMenu() {
               target="_blank"
               rel="noopener noreferrer"
               onClick={closeMenu}
-              className="flex items-center gap-2 font-bold text-lg text-sky-400 hover:text-sky-300 transition"
+              className="flex items-center gap-2 font-bold text-lg text-white hover:text-sky-400 transition"
             >
               📢 Join Community
             </a>
@@ -149,7 +158,7 @@ export default function CustomerMenu() {
               className={`block font-bold text-lg transition ${
                 pathname === "/support"
                   ? "text-sky-400"
-                  : "hover:text-sky-400"
+                  : "text-white hover:text-sky-400"
               }`}
             >
               💬 Contact Support
@@ -162,7 +171,7 @@ export default function CustomerMenu() {
               className={`block font-bold text-lg transition ${
                 pathname === "/disclaimer"
                   ? "text-sky-400"
-                  : "hover:text-sky-400"
+                  : "text-white hover:text-sky-400"
               }`}
             >
               ⚠ Disclaimer
@@ -171,13 +180,11 @@ export default function CustomerMenu() {
             {/* Logout */}
             <button
               onClick={logout}
-              className="text-red-400 font-bold text-lg"
+              className="text-red-400 font-bold text-lg hover:text-red-300 transition"
             >
               🚪 Logout
             </button>
-
           </div>
-
         </div>
       </div>
     </>
