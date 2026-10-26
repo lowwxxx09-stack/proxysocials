@@ -96,6 +96,25 @@ function safeProviderError(value: unknown): string {
   return value.slice(0, 500);
 }
 
+/**
+ * Only refund when the provider explicitly reports a rejection that means
+ * the order was not created. Network errors, malformed responses, and vague
+ * provider errors must remain in manual review because their outcome is unknown.
+ */
+function isDefinitiveProviderRejection(value: unknown): boolean {
+  if (typeof value !== "string") return false;
+
+  const normalized = value.trim().toLowerCase().replace(/[._-]+/g, " ");
+
+  return [
+    "not enough funds on balance",
+    "not enough funds",
+    "insufficient funds",
+    "insufficient balance",
+    "not enough balance",
+  ].some((phrase) => normalized.includes(phrase));
+}
+
 async function markManualReview(
   orderId: string,
   reason: string,
@@ -804,12 +823,68 @@ export async function POST(request: Request) {
       });
     }
 
-    // Do not assume a provider error proves rejection.
-    // Keep reserved funds untouched until the outcome is verified.
-    const providerReason = safeProviderError(
-      providerResponse.error ?? providerResponse.message,
-    );
+    // A specific provider balance rejection means the provider could not
+    // create the order. Release the held wallet funds through the existing
+    // idempotent database function. Ambiguous errors remain in manual review.
+    const rawProviderReason =
+      providerResponse.error ?? providerResponse.message;
+    const providerReason = safeProviderError(rawProviderReason);
+    const rejectionConfirmed = isDefinitiveProviderRejection(rawProviderReason);
 
+    if (rejectionConfirmed) {
+      const { data: releaseData, error: releaseError } =
+        await supabaseAdmin.rpc("release_smm_wallet_order", {
+          p_order_id: orderId,
+          p_reason: `Provider rejected order (HTTP ${providerHttpResponse.status}): ${providerReason}`,
+        });
+
+      const releaseResult = Array.isArray(releaseData)
+        ? releaseData[0]
+        : releaseData;
+
+      if (
+        releaseError ||
+        !releaseResult ||
+        typeof releaseResult !== "object" ||
+        (releaseResult as { success?: unknown }).success !== true
+      ) {
+        console.error("Automatic SMM refund failed:", {
+          orderId,
+          error: releaseError?.message ?? "Refund function returned an unexpected result.",
+        });
+
+        await markManualReview(
+          orderId,
+          `Provider rejection was confirmed, but automatic refund failed: ${providerReason}`,
+        );
+
+        return NextResponse.json(
+          {
+            success: false,
+            orderId,
+            status: "manual_review",
+            refunded: false,
+            message:
+              "The provider rejected this order, but we could not confirm the refund. Support will review it; please do not submit the same order again.",
+          },
+          { status: 202 },
+        );
+      }
+
+      return NextResponse.json(
+        {
+          success: false,
+          orderId,
+          status: "failed",
+          refunded: true,
+          message:
+            "The provider rejected this order. The reserved funds have been returned to your wallet.",
+        },
+        { status: 502 },
+      );
+    }
+
+    // Do not refund vague errors, timeouts, or other uncertain outcomes.
     await markManualReview(
       orderId,
       `Provider did not return a confirmed order ID (HTTP ${providerHttpResponse.status}): ${providerReason}`,
@@ -820,6 +895,7 @@ export async function POST(request: Request) {
         success: false,
         orderId,
         status: "manual_review",
+        refunded: false,
         message:
           "The provider did not confirm this order. Your funds remain reserved while we verify the outcome. Please do not submit the same order again.",
       },
