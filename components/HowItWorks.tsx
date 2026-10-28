@@ -12,76 +12,77 @@ export default function HowItWorks() {
       number: "02",
       title: "Pay Securely",
       description:
-        "Complete your payment safely through our secure Flutterwave checkout in just a few clicks.",
+        "Complete your payment through the available checkout options and follow the payment instructions.",
     },
     {
       icon: "🚀",
       number: "03",
       title: "Receive Your Order",
       description:
-        "Our team begins processing immediately and delivers your order as quickly as possible.",
+        "Track your order and receive it according to the service's listed delivery time.",
     },
   ];
 
   return (
-    <section className="bg-gradient-to-b from-sky-50 to-white py-24 px-6">
-
-      <div className="max-w-7xl mx-auto">
-
-        <div className="text-center">
-
-          <span className="inline-block bg-sky-100 text-sky-700 px-5 py-2 rounded-full font-bold text-sm">
+    <section className="overflow-hidden bg-gradient-to-b from-sky-50 to-white px-3 py-12 sm:px-6 sm:py-16 lg:py-20">
+      <div className="mx-auto w-full max-w-7xl">
+        {/* Section heading */}
+        <div className="mx-auto max-w-3xl text-center">
+          <span className="inline-flex items-center rounded-full border border-sky-100 bg-sky-100 px-4 py-2 text-xs font-bold text-sky-700 sm:px-5 sm:text-sm">
             Simple Process
           </span>
 
-          <h2 className="mt-6 text-4xl md:text-5xl font-black text-gray-900">
+          <h2 className="mt-4 text-3xl font-black leading-tight tracking-tight text-gray-900 sm:mt-6 sm:text-4xl md:text-5xl">
             How ProxySocials Works
           </h2>
 
-          <p className="mt-5 text-lg text-gray-600 max-w-3xl mx-auto leading-8">
-            Ordering from ProxySocials takes only a few minutes.
-            Our streamlined process ensures speed, security and reliability.
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-gray-600 sm:mt-5 sm:text-base sm:leading-7 lg:text-lg">
+            Getting started is simple. Choose what you need, complete checkout,
+            and follow your order until delivery.
           </p>
-
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 mt-16">
-
+        {/* Steps */}
+        <div className="relative mt-8 grid grid-cols-1 gap-4 sm:mt-12 sm:grid-cols-2 sm:gap-5 lg:mt-16 lg:grid-cols-3 lg:gap-6">
           {steps.map((step) => (
-
-            <div
+            <article
               key={step.number}
-              className="relative bg-white border border-sky-100 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 p-8"
+              className="group relative flex min-w-0 flex-col overflow-hidden rounded-2xl border border-sky-100 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-sky-200 hover:shadow-xl sm:rounded-3xl sm:p-7 lg:p-8"
             >
+              {/* Decorative number */}
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute -right-1 -top-5 select-none text-7xl font-black tracking-tighter text-sky-50 sm:-right-2 sm:-top-6 sm:text-8xl"
+              >
+                {step.number}
+              </span>
 
-              <div className="flex justify-between items-center">
-
-                <div className="text-5xl">
-                  {step.icon}
+              <div className="relative flex items-center justify-between gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-50 text-2xl transition duration-300 group-hover:bg-sky-100 sm:h-14 sm:w-14 sm:rounded-2xl sm:text-3xl">
+                  <span aria-hidden="true">{step.icon}</span>
                 </div>
 
-                <span className="text-5xl font-black text-sky-100">
-                  {step.number}
+                <span className="rounded-full border border-sky-100 bg-white px-3 py-1 text-xs font-bold text-sky-700 sm:text-sm">
+                  Step {step.number}
                 </span>
-
               </div>
 
-              <h3 className="mt-8 text-2xl font-black text-gray-900">
+              <h3 className="relative mt-5 text-xl font-black leading-snug text-gray-900 sm:mt-7 sm:text-2xl">
                 {step.title}
               </h3>
 
-              <p className="mt-4 text-gray-600 leading-8">
+              <p className="relative mt-3 flex-1 text-sm leading-6 text-gray-600 sm:mt-4 sm:text-base sm:leading-7">
                 {step.description}
               </p>
 
-            </div>
-
+              <div
+                aria-hidden="true"
+                className="mt-5 h-1 w-12 rounded-full bg-gradient-to-r from-sky-400 to-cyan-300 transition-all duration-300 group-hover:w-20 sm:mt-6"
+              />
+            </article>
           ))}
-
         </div>
-
       </div>
-
     </section>
   );
 }
