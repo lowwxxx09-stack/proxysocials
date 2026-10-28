@@ -1,4 +1,3 @@
-
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
@@ -22,6 +21,7 @@ type ExistingService = {
   pricing_mode: "automatic" | "manual" | null;
   markup_percent: number | string | null;
   is_enabled: boolean;
+  created_at: string | null;
 };
 
 function automaticRetailRate(
@@ -40,6 +40,7 @@ export async function POST() {
   try {
     // 1. Authenticate the current user.
     const authClient = await createClient();
+
     const {
       data: { user },
       error: authError,
@@ -76,7 +77,7 @@ export async function POST() {
       );
     }
 
-    // 3. Fetch and validate the complete provider catalogue first.
+    // 3. Fetch and validate the provider catalogue.
     const rawServices = await fetchProviderServices();
     const services = rawServices.map(normalizeProviderService);
 
@@ -145,7 +146,9 @@ export async function POST() {
 
       if (error || !data) {
         throw new Error(
-          `Provider creation failed: ${error?.message ?? "No provider returned"}`
+          `Provider creation failed: ${
+            error?.message ?? "No provider returned"
+          }`
         );
       }
 
@@ -165,7 +168,9 @@ export async function POST() {
 
     if (runError || !run) {
       throw new Error(
-        `Sync log creation failed: ${runError?.message ?? "No sync log returned"}`
+        `Sync log creation failed: ${
+          runError?.message ?? "No sync log returned"
+        }`
       );
     }
 
@@ -173,18 +178,20 @@ export async function POST() {
 
     const now = new Date().toISOString();
 
-    // 6. Fetch existing settings in batches of service IDs.
-    // These settings must survive provider catalogue refreshes.
+    // 6. Fetch existing service settings in batches.
+    // Include created_at so existing timestamps can be preserved.
     const existingByProviderId = new Map<string, ExistingService>();
 
     for (let offset = 0; offset < services.length; offset += BATCH_SIZE) {
       const batch = services.slice(offset, offset + BATCH_SIZE);
-      const batchIds = batch.map((service) => service.provider_service_id);
+      const batchIds = batch.map(
+        (service) => service.provider_service_id
+      );
 
       const { data, error } = await supabaseAdmin
         .from("smm_services")
         .select(
-          "id,provider_service_id,provider_rate,retail_rate,pricing_mode,markup_percent,is_enabled"
+          "id,provider_service_id,provider_rate,retail_rate,pricing_mode,markup_percent,is_enabled,created_at"
         )
         .eq("provider_id", providerId)
         .in("provider_service_id", batchIds);
@@ -205,7 +212,7 @@ export async function POST() {
     let automaticPricesUpdated = 0;
     let manualPricesPreserved = 0;
 
-    // 7. Build upserts while explicitly preserving existing settings.
+    // 7. Build upserts while preserving existing settings and timestamps.
     const rowsToSave = services.map((service) => {
       const existing = existingByProviderId.get(
         service.provider_service_id
@@ -222,13 +229,18 @@ export async function POST() {
           ...service,
           provider_id: providerId,
           provider_rate: providerRate,
-          retail_rate: automaticRetailRate(providerRate, defaultMarkup),
+          retail_rate: automaticRetailRate(
+            providerRate,
+            defaultMarkup
+          ),
           pricing_mode: "automatic" as const,
           markup_percent: defaultMarkup,
           currency: "NGN",
           is_enabled: false,
           provider_available: true,
           last_synced_at: now,
+
+          // Always supply a valid timestamp for new services.
           created_at: now,
           updated_at: now,
         };
@@ -237,27 +249,31 @@ export async function POST() {
       updated++;
 
       const pricingMode =
-        existing.pricing_mode === "manual" ? "manual" : "automatic";
+        existing.pricing_mode === "manual"
+          ? "manual"
+          : "automatic";
 
       const savedMarkup = Number(existing.markup_percent ?? 50);
+
       const markup =
-        Number.isFinite(savedMarkup) && savedMarkup >= 0 && savedMarkup <= 1000
+        Number.isFinite(savedMarkup) &&
+        savedMarkup >= 0 &&
+        savedMarkup <= 1000
           ? savedMarkup
           : 50;
 
-      let retailRate: number;
+      let retailRate: number | null;
 
       if (pricingMode === "manual") {
-        // Never replace a manually configured retail price.
-        // If a legacy manual service has no retail price, leave it unset.
+        // Preserve manually configured retail prices.
         retailRate =
           existing.retail_rate === null
-            ? null as unknown as number
+            ? null
             : Number(existing.retail_rate);
 
         manualPricesPreserved++;
       } else {
-        // Automatic prices track the newest provider rate and saved markup.
+        // Automatic prices follow the latest provider rate.
         retailRate = automaticRetailRate(providerRate, markup);
         automaticPricesUpdated++;
       }
@@ -273,17 +289,25 @@ export async function POST() {
         is_enabled: existing.is_enabled,
         provider_available: true,
         last_synced_at: now,
+
+        // Critical fix:
+        // Never let a null provider timestamp overwrite the database value.
+        // Preserve the existing timestamp, or use now if it's missing.
+        created_at: existing.created_at ?? now,
         updated_at: now,
       };
     });
 
-    // 8. Save in batches to reduce database round trips.
+    // 8. Save the catalogue in batches.
     for (
       let offset = 0;
       offset < rowsToSave.length;
       offset += BATCH_SIZE
     ) {
-      const batch = rowsToSave.slice(offset, offset + BATCH_SIZE);
+      const batch = rowsToSave.slice(
+        offset,
+        offset + BATCH_SIZE
+      );
 
       const { error } = await supabaseAdmin
         .from("smm_services")
@@ -293,17 +317,21 @@ export async function POST() {
         });
 
       if (error) {
-        throw new Error(`Saving service batch failed: ${error.message}`);
+        throw new Error(
+          `Saving service batch failed: ${error.message}`
+        );
       }
     }
 
-    // 9. Mark provider services missing from the new catalogue unavailable.
-    // Never delete their records or change their visibility setting here.
-    const { data: existingProviderServices, error: existingServicesError } =
-      await supabaseAdmin
-        .from("smm_services")
-        .select("id,provider_service_id")
-        .eq("provider_id", providerId);
+    // 9. Mark services missing from the new catalogue unavailable.
+    // Existing records are retained; nothing is deleted.
+    const {
+      data: existingProviderServices,
+      error: existingServicesError,
+    } = await supabaseAdmin
+      .from("smm_services")
+      .select("id,provider_service_id")
+      .eq("provider_id", providerId);
 
     if (existingServicesError) {
       throw new Error(
@@ -312,11 +340,20 @@ export async function POST() {
     }
 
     const missingIds = (existingProviderServices ?? [])
-      .filter((item) => !seenIds.has(item.provider_service_id))
+      .filter(
+        (item) => !seenIds.has(item.provider_service_id)
+      )
       .map((item) => item.id);
 
-    for (let offset = 0; offset < missingIds.length; offset += BATCH_SIZE) {
-      const batch = missingIds.slice(offset, offset + BATCH_SIZE);
+    for (
+      let offset = 0;
+      offset < missingIds.length;
+      offset += BATCH_SIZE
+    ) {
+      const batch = missingIds.slice(
+        offset,
+        offset + BATCH_SIZE
+      );
 
       const { error } = await supabaseAdmin
         .from("smm_services")
@@ -347,7 +384,9 @@ export async function POST() {
       .eq("id", syncRunId);
 
     if (finishError) {
-      throw new Error(`Could not finish sync log: ${finishError.message}`);
+      throw new Error(
+        `Could not finish sync log: ${finishError.message}`
+      );
     }
 
     return NextResponse.json({
@@ -364,7 +403,9 @@ export async function POST() {
     });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Unknown error";
+      error instanceof Error
+        ? error.message
+        : "Unknown error";
 
     console.error("SMM catalogue sync failed:", message);
 
@@ -379,7 +420,10 @@ export async function POST() {
         .eq("id", syncRunId);
 
       if (logError) {
-        console.error("Could not update SMM sync log:", logError.message);
+        console.error(
+          "Could not update SMM sync log:",
+          logError.message
+        );
       }
     }
 
