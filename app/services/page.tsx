@@ -178,9 +178,9 @@ export default function ServicesPage() {
           animationDelay: `${Math.min(index * 0.06, 0.4)}s`,
         }}
       >
-        <div className="flex min-h-[96px] items-stretch sm:min-h-[160px] md:min-h-[190px]">
+        <div className="flex min-h-[106px] items-stretch min-[380px]:min-h-[114px] sm:min-h-[160px] md:min-h-[190px]">
           {/* IMAGE */}
-          <div className="relative w-[58px] shrink-0 overflow-hidden bg-[#172433] min-[380px]:w-[64px] sm:w-36 md:w-48">
+          <div className="relative w-[66px] shrink-0 overflow-hidden bg-[#172433] min-[380px]:w-[72px] sm:w-36 md:w-48">
             {service.image ? (
               <img
                 src={service.image}
@@ -190,7 +190,7 @@ export default function ServicesPage() {
               />
             ) : (
               <div className="flex h-full items-center justify-center bg-gradient-to-br from-[#102b40] to-[#101722]">
-                <span className="text-lg font-black text-cyan-400 sm:text-3xl">
+                <span className="text-2xl font-black text-cyan-400 sm:text-3xl">
                   P
                 </span>
               </div>
@@ -198,52 +198,54 @@ export default function ServicesPage() {
           </div>
 
           {/* CONTENT */}
-          <div className="flex min-w-0 flex-1 flex-col justify-between p-1.5 min-[380px]:p-2 sm:p-4 md:p-5">
+          <div className="flex min-w-0 flex-1 flex-col justify-between p-2 min-[380px]:p-2.5 sm:p-4 md:p-5">
             <div>
-              <span className="inline-block max-w-full truncate rounded-full border border-cyan-400/15 bg-cyan-400/[0.08] px-1.5 py-[2px] text-[6px] font-bold uppercase tracking-wide text-cyan-300 sm:px-2.5 sm:py-1 sm:text-[10px]">
+              <span className="inline-block max-w-full truncate rounded-full border border-cyan-400/15 bg-cyan-400/[0.08] px-2 py-[3px] text-[7px] font-bold uppercase tracking-wide text-cyan-300 min-[380px]:text-[8px] sm:px-2.5 sm:py-1 sm:text-[10px]">
                 {service.category}
               </span>
 
-              <h2 className="mt-0.5 line-clamp-1 text-[10px] font-extrabold leading-tight text-white min-[380px]:text-[11px] sm:mt-2 sm:line-clamp-2 sm:text-lg md:text-xl">
+              <h2 className="mt-1 line-clamp-1 text-[12px] font-extrabold leading-tight text-white min-[380px]:text-[13px] sm:mt-2 sm:line-clamp-2 sm:text-lg md:text-xl">
                 {service.title}
               </h2>
 
-              <p className="mt-0.5 line-clamp-1 text-[8px] leading-3 text-gray-400 sm:mt-1.5 sm:line-clamp-2 sm:text-xs sm:leading-5">
+              <p className="mt-1 line-clamp-2 text-[9px] leading-[1.35] text-gray-400 min-[380px]:text-[10px] sm:mt-1.5 sm:text-xs sm:leading-5">
                 {service.description || "Quality digital service from ProxySocials."}
               </p>
             </div>
 
-            <div className="mt-1.5 flex items-end justify-between gap-1 border-t border-white/[0.06] pt-1 sm:mt-3 sm:gap-3 sm:pt-3">
+            <div className="mt-2 flex items-end justify-between gap-1.5 border-t border-white/[0.06] pt-1.5 min-[380px]:mt-2.5 sm:mt-3 sm:gap-3 sm:pt-3">
               <div className="min-w-0">
-                <p className="text-[7px] text-gray-500 sm:text-[10px]">
+                <p className="text-[8px] text-gray-500 sm:text-[10px]">
                   Delivery
                 </p>
 
-                <p className="truncate text-[8px] font-semibold text-gray-300 sm:text-xs">
+                <p className="truncate text-[9px] font-semibold text-gray-300 min-[380px]:text-[10px] sm:text-xs">
                   {service.delivery_time || "Contact support"}
                 </p>
 
                 <div
-                  className={`mt-0.5 flex items-center gap-1 text-[7px] font-bold sm:mt-2 sm:text-[10px] ${stockInfo.color}`}
+                  className={`mt-1 flex items-center gap-1 text-[8px] font-bold min-[380px]:text-[9px] sm:mt-2 sm:text-[10px] ${stockInfo.color}`}
                 >
-                  <span className={`h-1 w-1 shrink-0 rounded-full sm:h-1.5 sm:w-1.5 ${stockInfo.dot}`} />
+                  <span
+                    className={`h-1.5 w-1.5 shrink-0 rounded-full sm:h-1.5 sm:w-1.5 ${stockInfo.dot}`}
+                  />
                   {stockInfo.label}
                 </div>
               </div>
 
-              <div className="w-[76px] shrink-0 text-right sm:w-32 md:w-36">
-                <p className="text-[7px] text-gray-500 sm:text-[10px]">
+              <div className="w-[84px] shrink-0 text-right min-[380px]:w-[92px] sm:w-32 md:w-36">
+                <p className="text-[8px] text-gray-500 sm:text-[10px]">
                   Price
                 </p>
 
-                <p className="text-xs font-black leading-tight text-cyan-300 min-[380px]:text-sm sm:text-xl md:text-2xl">
+                <p className="text-sm font-black leading-tight text-cyan-300 min-[380px]:text-base sm:text-xl md:text-2xl">
                   ₦{Number(service.price).toLocaleString("en-NG")}
                 </p>
 
                 <button
                   onClick={() => orderService(service.id)}
                   disabled={stock <= 0}
-                  className={`mt-1 w-full rounded px-1 py-1 text-[8px] font-extrabold transition-all sm:mt-2 sm:rounded-xl sm:py-2.5 sm:text-xs ${
+                  className={`mt-1.5 w-full rounded-md px-1.5 py-1.5 text-[9px] font-extrabold transition-all min-[380px]:text-[10px] sm:mt-2 sm:rounded-xl sm:py-2.5 sm:text-xs ${
                     stock > 0
                       ? "bg-cyan-400 text-[#07111c] hover:bg-cyan-300 active:scale-95"
                       : "cursor-not-allowed bg-white/[0.05] text-gray-500"
