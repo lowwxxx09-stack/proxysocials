@@ -49,7 +49,10 @@ const formatDate = (date: string) =>
   });
 
 function normalizeStatus(value: string | null | undefined) {
-  return String(value || "unknown").toLowerCase().trim().replace(/[_-]+/g, " ");
+  return String(value || "unknown")
+    .toLowerCase()
+    .trim()
+    .replace(/[_-]+/g, " ");
 }
 
 function getStatusStyle(value: string | null | undefined) {
@@ -105,7 +108,7 @@ function StatusBadge({
 
   return (
     <span
-      className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold capitalize ${style.color} ${style.background} ${style.border}`}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold capitalize sm:gap-2 sm:px-3 sm:py-1.5 sm:text-xs ${style.color} ${style.background} ${style.border}`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} />
       {normalizeStatus(status)}
@@ -134,7 +137,9 @@ function StatCard({
     >
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-zinc-400">{title}</span>
-        <span className={`flex h-10 w-10 items-center justify-center rounded-xl text-lg ${accent}`}>
+        <span
+          className={`flex h-10 w-10 items-center justify-center rounded-xl text-lg ${accent}`}
+        >
           {icon}
         </span>
       </div>
@@ -245,16 +250,13 @@ export default function OrderHistory() {
   const filteredOrders = useMemo(() => {
     return orders.filter((order) => {
       const status = normalizeStatus(order.order_status);
+      const searchTerm = search.toLowerCase().trim();
 
       const matchesSearch =
-        !search ||
-        order.id.toLowerCase().includes(search.toLowerCase()) ||
-        (order.services?.title || "")
-          .toLowerCase()
-          .includes(search.toLowerCase()) ||
-        (order.services?.category || "")
-          .toLowerCase()
-          .includes(search.toLowerCase());
+        !searchTerm ||
+        order.id.toLowerCase().includes(searchTerm) ||
+        (order.services?.title || "").toLowerCase().includes(searchTerm) ||
+        (order.services?.category || "").toLowerCase().includes(searchTerm);
 
       let matchesFilter = true;
 
@@ -342,19 +344,19 @@ export default function OrderHistory() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#080c12] px-5 py-10 text-white">
+      <main className="min-h-screen bg-[#080c12] px-4 py-8 text-white sm:px-5 sm:py-10">
         <div className="mx-auto max-w-7xl">
-          <div className="mb-10 flex animate-pulse items-center gap-3">
-            <div className="h-12 w-12 rounded-2xl bg-zinc-800" />
+          <div className="mb-8 flex animate-pulse items-center gap-3">
+            <div className="h-11 w-11 rounded-2xl bg-zinc-800" />
             <div>
               <div className="h-4 w-36 rounded bg-zinc-800" />
               <div className="mt-2 h-3 w-24 rounded bg-zinc-900" />
             </div>
           </div>
 
-          <div className="mb-10 h-36 animate-pulse rounded-3xl bg-zinc-900" />
+          <div className="mb-8 hidden h-36 animate-pulse rounded-3xl bg-zinc-900 md:block" />
 
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <div className="hidden grid-cols-4 gap-4 md:grid">
             {[1, 2, 3, 4].map((item) => (
               <div
                 key={item}
@@ -363,11 +365,11 @@ export default function OrderHistory() {
             ))}
           </div>
 
-          <div className="mt-8 space-y-4">
+          <div className="mt-6 space-y-3">
             {[1, 2, 3].map((item) => (
               <div
                 key={item}
-                className="h-32 animate-pulse rounded-2xl bg-zinc-900"
+                className="h-24 animate-pulse rounded-2xl bg-zinc-900"
               />
             ))}
           </div>
@@ -382,7 +384,7 @@ export default function OrderHistory() {
         @keyframes page-in {
           from {
             opacity: 0;
-            transform: translateY(16px);
+            transform: translateY(12px);
           }
           to {
             opacity: 1;
@@ -402,11 +404,19 @@ export default function OrderHistory() {
         }
 
         .animate-page-in {
-          animation: page-in 0.65s ease both;
+          animation: page-in 0.5s ease both;
         }
 
         .glow-pulse {
           animation: glow-pulse 6s ease-in-out infinite;
+        }
+
+        .order-scrollbar {
+          scrollbar-width: none;
+        }
+
+        .order-scrollbar::-webkit-scrollbar {
+          display: none;
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -419,11 +429,36 @@ export default function OrderHistory() {
 
       <CustomerMenu />
 
-      <div className="pointer-events-none absolute left-1/2 top-0 h-[450px] w-[850px] -translate-x-1/2 rounded-full bg-cyan-500/[0.06] blur-[120px]" />
+      <div className="pointer-events-none absolute left-1/2 top-0 hidden h-[450px] w-[850px] -translate-x-1/2 rounded-full bg-cyan-500/[0.06] blur-[120px] md:block" />
 
-      <div className="relative mx-auto max-w-7xl px-4 pb-20 pt-8 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="animate-page-in mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+      <div className="relative mx-auto max-w-7xl px-3 pb-12 pt-4 sm:px-6 sm:pb-20 sm:pt-8 lg:px-8">
+
+        {/* MOBILE HEADER */}
+        <header className="mb-5 flex items-center justify-between gap-3 md:hidden">
+          <div>
+            <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-cyan-400">
+              Customer dashboard
+            </p>
+            <h1 className="mt-1 text-2xl font-black tracking-tight">
+              My <span className="text-cyan-400">Orders</span>
+            </h1>
+            <p className="mt-1 text-[11px] text-zinc-500">
+              Track and manage your purchases.
+            </p>
+          </div>
+
+          <button
+            onClick={() => loadOrders(true)}
+            disabled={refreshing}
+            aria-label="Refresh orders"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#101722] text-lg text-cyan-300 transition hover:border-cyan-400/30 disabled:opacity-50"
+          >
+            <span className={refreshing ? "animate-spin" : ""}>↻</span>
+          </button>
+        </header>
+
+        {/* DESKTOP HEADER */}
+        <div className="animate-page-in mb-8 hidden flex-col justify-between gap-5 sm:flex-row sm:items-center md:flex">
           <div>
             <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-cyan-400">
               <span className="h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_12px_#22d3ee]" />
@@ -458,8 +493,52 @@ export default function OrderHistory() {
           </div>
         </div>
 
-        {/* Hero card */}
-        <section className="animate-page-in relative mb-7 overflow-hidden rounded-3xl border border-cyan-400/15 bg-gradient-to-br from-[#102a38] via-[#101b29] to-[#10131d] p-6 shadow-2xl shadow-black/20 sm:p-8">
+        {/* MOBILE SEARCH */}
+        <section className="mb-3 md:hidden">
+          <div className="relative">
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-lg text-zinc-500">
+              ⌕
+            </span>
+
+            <input
+              type="text"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search orders or services..."
+              className="h-11 w-full rounded-xl border border-white/[0.08] bg-[#101722] pl-10 pr-4 text-xs text-white outline-none transition placeholder:text-zinc-600 focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/10"
+            />
+          </div>
+        </section>
+
+        {/* MOBILE FILTERS */}
+        <section className="mb-5 md:hidden">
+          <div className="order-scrollbar flex gap-2 overflow-x-auto pb-1">
+            {(
+              [
+                ["all", "All", stats.total],
+                ["pending", "Pending", stats.pending],
+                ["completed", "Completed", stats.completed],
+                ["failed", "Failed", stats.failed],
+              ] as [FilterStatus, string, number][]
+            ).map(([value, label, count]) => (
+              <button
+                key={value}
+                onClick={() => setFilter(value)}
+                className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-[10px] font-bold transition ${
+                  filter === value
+                    ? "border-cyan-400/30 bg-cyan-400/10 text-cyan-300"
+                    : "border-white/[0.07] bg-[#101722] text-zinc-400"
+                }`}
+              >
+                {label}
+                <span className="text-[9px] opacity-70">{count}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* DESKTOP HERO */}
+        <section className="animate-page-in relative mb-7 hidden overflow-hidden rounded-3xl border border-cyan-400/15 bg-gradient-to-br from-[#102a38] via-[#101b29] to-[#10131d] p-8 shadow-2xl shadow-black/20 md:block">
           <div className="glow-pulse pointer-events-none absolute -right-20 -top-32 h-72 w-72 rounded-full bg-cyan-400/15 blur-[75px]" />
 
           <div className="relative flex flex-col justify-between gap-8 md:flex-row md:items-center">
@@ -469,7 +548,7 @@ export default function OrderHistory() {
                 YOUR PROXYSOCIALS ACTIVITY
               </div>
 
-              <h2 className="max-w-xl text-2xl font-black leading-tight sm:text-3xl">
+              <h2 className="max-w-xl text-3xl font-black leading-tight">
                 Your purchases,
                 <br />
                 <span className="text-cyan-300">beautifully organized.</span>
@@ -495,8 +574,8 @@ export default function OrderHistory() {
           </div>
         </section>
 
-        {/* Statistics */}
-        <section className="mb-9 grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-5">
+        {/* DESKTOP STATISTICS */}
+        <section className="mb-9 hidden grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-5 md:grid">
           <StatCard
             title="Total orders"
             value={stats.total}
@@ -534,8 +613,8 @@ export default function OrderHistory() {
           />
         </section>
 
-        {/* Search and filters */}
-        <section className="animate-page-in mb-6 rounded-2xl border border-white/[0.07] bg-[#101722] p-4 sm:p-5">
+        {/* DESKTOP SEARCH AND FILTERS */}
+        <section className="animate-page-in mb-6 hidden rounded-2xl border border-white/[0.07] bg-[#101722] p-5 md:block">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h2 className="text-lg font-black">Your transactions</h2>
@@ -591,9 +670,9 @@ export default function OrderHistory() {
           </div>
         </section>
 
-        {/* Error */}
+        {/* ERROR */}
         {error && (
-          <div className="mb-6 flex items-center justify-between gap-4 rounded-xl border border-rose-400/20 bg-rose-400/10 p-4 text-sm text-rose-300">
+          <div className="mb-5 flex items-center justify-between gap-4 rounded-xl border border-rose-400/20 bg-rose-400/10 p-4 text-xs text-rose-300 sm:text-sm">
             <span>{error}</span>
             <button
               onClick={() => loadOrders(true)}
@@ -604,21 +683,21 @@ export default function OrderHistory() {
           </div>
         )}
 
-        {/* Order list */}
-        <section className="space-y-4">
+        {/* ORDER LIST */}
+        <section className="space-y-3 sm:space-y-4">
           {filteredOrders.length === 0 ? (
-            <div className="animate-page-in rounded-3xl border border-white/[0.07] bg-[#101722] px-6 py-16 text-center">
-              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl border border-cyan-400/10 bg-cyan-400/[0.06] text-4xl text-cyan-300">
+            <div className="animate-page-in rounded-2xl border border-white/[0.07] bg-[#101722] px-5 py-12 text-center sm:rounded-3xl sm:px-6 sm:py-16">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-cyan-400/10 bg-cyan-400/[0.06] text-3xl text-cyan-300 sm:h-20 sm:w-20 sm:rounded-3xl sm:text-4xl">
                 {orders.length === 0 ? "▤" : "⌕"}
               </div>
 
-              <h3 className="mt-6 text-xl font-black">
+              <h3 className="mt-5 text-lg font-black sm:mt-6 sm:text-xl">
                 {orders.length === 0
                   ? "Your journey starts here."
                   : "No matching orders found."}
               </h3>
 
-              <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-zinc-500">
+              <p className="mx-auto mt-2 max-w-sm text-xs leading-6 text-zinc-500 sm:text-sm">
                 {orders.length === 0
                   ? "You haven't made a purchase yet. Explore our marketplace and your orders will appear here."
                   : "Try a different search term or select another order filter."}
@@ -627,7 +706,7 @@ export default function OrderHistory() {
               {orders.length === 0 ? (
                 <Link
                   href="/"
-                  className="mt-7 inline-flex rounded-xl bg-cyan-500 px-6 py-3 text-sm font-black text-[#061018] transition hover:bg-cyan-400"
+                  className="mt-6 inline-flex rounded-xl bg-cyan-500 px-6 py-3 text-xs font-black text-[#061018] transition hover:bg-cyan-400 sm:mt-7 sm:text-sm"
                 >
                   Explore marketplace →
                 </Link>
@@ -637,7 +716,7 @@ export default function OrderHistory() {
                     setSearch("");
                     setFilter("all");
                   }}
-                  className="mt-6 rounded-xl border border-white/10 px-5 py-3 text-sm font-bold text-zinc-300 transition hover:bg-white/5"
+                  className="mt-5 rounded-xl border border-white/10 px-5 py-3 text-xs font-bold text-zinc-300 transition hover:bg-white/5 sm:mt-6 sm:text-sm"
                 >
                   Clear filters
                 </button>
@@ -655,18 +734,66 @@ export default function OrderHistory() {
               return (
                 <article
                   key={order.id}
-                  className="animate-page-in overflow-hidden rounded-2xl border border-white/[0.07] bg-[#101722] shadow-xl shadow-black/10 transition duration-300 hover:border-cyan-400/20"
+                  className="animate-page-in overflow-hidden rounded-xl border border-white/[0.07] bg-[#101722] shadow-xl shadow-black/10 transition duration-300 hover:border-cyan-400/20 sm:rounded-2xl"
                   style={{
                     animationDelay: `${Math.min(index * 50, 350)}ms`,
                   }}
                 >
+                  {/* ORDER SUMMARY */}
                   <button
                     type="button"
                     onClick={() => toggleOrder(order.id)}
                     aria-expanded={expanded}
-                    className="w-full p-4 text-left sm:p-6"
+                    className="w-full p-3.5 text-left transition hover:bg-white/[0.015] sm:p-6"
                   >
-                    <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                    {/* MOBILE SUMMARY */}
+                    <div className="md:hidden">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex min-w-0 items-center gap-2.5">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-cyan-400/10 bg-cyan-400/[0.07] text-base text-cyan-300">
+                            ◈
+                          </div>
+
+                          <div className="min-w-0">
+                            <h3 className="truncate text-xs font-extrabold text-white">
+                              {order.services?.title || "ProxySocials Service"}
+                            </h3>
+                            <p className="mt-1 truncate text-[10px] text-zinc-500">
+                              {order.services?.category || "Digital service"}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="shrink-0 text-right">
+                          <p className="text-sm font-black text-white">
+                            {formatMoney(order.amount)}
+                          </p>
+                          <div className="mt-1">
+                            <StatusBadge status={order.order_status} />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 flex items-center justify-between border-t border-white/[0.06] pt-2.5">
+                        <p className="text-[10px] text-zinc-500">
+                          {formatDate(order.created_at)}
+                        </p>
+
+                        <span className="flex items-center gap-1 text-[10px] font-bold text-cyan-300">
+                          {expanded ? "Hide details" : "View details"}
+                          <span
+                            className={`transition-transform duration-300 ${
+                              expanded ? "rotate-180" : ""
+                            }`}
+                          >
+                            ↓
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* DESKTOP SUMMARY */}
+                    <div className="hidden flex-col gap-5 sm:flex-row sm:items-center sm:justify-between md:flex">
                       <div className="flex min-w-0 items-start gap-4">
                         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-cyan-400/10 bg-cyan-400/[0.07] text-xl text-cyan-300">
                           ◈
@@ -707,7 +834,8 @@ export default function OrderHistory() {
                       </div>
                     </div>
 
-                    <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-white/[0.06] pt-4">
+                    {/* DESKTOP STATUS INFORMATION */}
+                    <div className="mt-5 hidden flex-wrap items-center gap-2 border-t border-white/[0.06] pt-4 md:flex">
                       <span className="mr-1 text-[10px] font-bold uppercase tracking-wider text-zinc-600">
                         Payment
                       </span>
@@ -726,10 +854,38 @@ export default function OrderHistory() {
                     </div>
                   </button>
 
-                  {/* Expanded details */}
+                  {/* EXPANDED ORDER DETAILS */}
                   {expanded && (
-                    <div className="animate-page-in border-t border-white/[0.07] bg-black/20 p-4 sm:p-6">
-                      <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="animate-page-in border-t border-white/[0.07] bg-black/20 p-3.5 sm:p-6">
+                      {/* MOBILE ORDER REFERENCE */}
+                      <div className="mb-4 rounded-xl border border-white/[0.06] bg-[#0b111a] p-3 md:hidden">
+                        <p className="text-[9px] font-bold uppercase tracking-wider text-zinc-500">
+                          Order reference
+                        </p>
+                        <p className="mt-1 break-all font-mono text-[10px] text-zinc-300">
+                          {order.id}
+                        </p>
+                      </div>
+
+                      {/* PAYMENT AND ORDER STATUS */}
+                      <div className="mb-4 grid grid-cols-2 gap-2 md:hidden">
+                        <div className="rounded-xl border border-white/[0.06] bg-[#0b111a] p-3">
+                          <p className="mb-2 text-[9px] font-bold uppercase tracking-wider text-zinc-500">
+                            Payment
+                          </p>
+                          <StatusBadge status={order.payment_status} />
+                        </div>
+
+                        <div className="rounded-xl border border-white/[0.06] bg-[#0b111a] p-3">
+                          <p className="mb-2 text-[9px] font-bold uppercase tracking-wider text-zinc-500">
+                            Order status
+                          </p>
+                          <StatusBadge status={order.order_status} />
+                        </div>
+                      </div>
+
+                      {/* DESKTOP ORDER INFORMATION */}
+                      <div className="mb-5 hidden gap-3 sm:grid-cols-2 md:grid">
                         <div className="rounded-xl border border-white/[0.06] bg-[#0b111a] p-4">
                           <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
                             Order reference
@@ -749,19 +905,20 @@ export default function OrderHistory() {
                         </div>
                       </div>
 
+                      {/* DELIVERED PRODUCTS */}
                       {hasDelivery ? (
-                        <div className="mt-6">
+                        <div className="mt-4 md:mt-6">
                           <div className="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
                             <div>
                               <div className="flex items-center gap-2">
                                 <span className="text-lg text-emerald-400">
                                   ✓
                                 </span>
-                                <h4 className="text-lg font-black">
-                                  Your delivered products
+                                <h4 className="text-base font-black sm:text-lg">
+                                  Delivered products
                                 </h4>
                               </div>
-                              <p className="mt-1 text-xs text-zinc-500">
+                              <p className="mt-1 text-[10px] leading-5 text-zinc-500 sm:text-xs">
                                 Keep these details secure. Only share them with
                                 people you trust.
                               </p>
@@ -771,7 +928,7 @@ export default function OrderHistory() {
                               type="button"
                               onClick={() => copyAll(stock, order.id)}
                               disabled={copyingAll}
-                              className="rounded-xl border border-cyan-400/20 bg-cyan-400/10 px-4 py-2.5 text-xs font-black text-cyan-300 transition hover:bg-cyan-400/20 disabled:opacity-50"
+                              className="w-full rounded-xl border border-cyan-400/20 bg-cyan-400/10 px-4 py-2.5 text-xs font-black text-cyan-300 transition hover:bg-cyan-400/20 disabled:opacity-50 sm:w-auto"
                             >
                               {copied === `all-${order.id}`
                                 ? "✓ Copied all"
@@ -781,7 +938,7 @@ export default function OrderHistory() {
                             </button>
                           </div>
 
-                          <div className="space-y-4">
+                          <div className="space-y-3 sm:space-y-4">
                             {stock.map((item, itemIndex) => {
                               const fields = [
                                 ["Username", item.username],
@@ -801,31 +958,31 @@ export default function OrderHistory() {
                               return (
                                 <div
                                   key={item.id || itemIndex}
-                                  className="rounded-2xl border border-white/[0.07] bg-[#0b111a] p-4 sm:p-5"
+                                  className="rounded-xl border border-white/[0.07] bg-[#0b111a] p-3 sm:rounded-2xl sm:p-5"
                                 >
-                                  <div className="mb-4 flex items-center justify-between">
-                                    <span className="text-xs font-black uppercase tracking-wider text-zinc-400">
+                                  <div className="mb-3 flex items-center justify-between">
+                                    <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">
                                       Product {String(itemIndex + 1).padStart(2, "0")}
                                     </span>
-                                    <span className="rounded-lg bg-emerald-400/10 px-2.5 py-1 text-[10px] font-bold text-emerald-400">
+                                    <span className="rounded-lg bg-emerald-400/10 px-2.5 py-1 text-[9px] font-bold text-emerald-400">
                                       Delivered
                                     </span>
                                   </div>
 
-                                  <div className="space-y-3">
+                                  <div className="space-y-2.5">
                                     {fields.map(([label, value]) => {
                                       const key = `${order.id}-${itemIndex}-${label}`;
 
                                       return (
                                         <div
                                           key={label}
-                                          className="flex flex-col justify-between gap-3 rounded-xl border border-white/[0.05] bg-white/[0.02] p-3 sm:flex-row sm:items-center"
+                                          className="flex flex-col justify-between gap-2 rounded-lg border border-white/[0.05] bg-white/[0.02] p-3 sm:flex-row sm:items-center sm:rounded-xl"
                                         >
                                           <div className="min-w-0">
-                                            <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                                            <p className="text-[9px] font-bold uppercase tracking-wider text-zinc-500">
                                               {label}
                                             </p>
-                                            <p className="mt-1 break-all text-sm font-semibold text-zinc-200">
+                                            <p className="mt-1 break-all text-xs font-semibold text-zinc-200 sm:text-sm">
                                               {value}
                                             </p>
                                           </div>
@@ -833,7 +990,7 @@ export default function OrderHistory() {
                                           <button
                                             type="button"
                                             onClick={() => copyText(value, key)}
-                                            className="shrink-0 self-start rounded-lg border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-bold text-zinc-300 transition hover:border-cyan-400/30 hover:bg-cyan-400/10 hover:text-cyan-300 sm:self-center"
+                                            className="shrink-0 self-start rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-[10px] font-bold text-zinc-300 transition hover:border-cyan-400/30 hover:bg-cyan-400/10 hover:text-cyan-300 sm:self-center sm:px-4 sm:text-xs"
                                           >
                                             {copied === key ? "✓ Copied" : "Copy"}
                                           </button>
@@ -847,18 +1004,24 @@ export default function OrderHistory() {
                           </div>
                         </div>
                       ) : (
-                        <div className="mt-5 rounded-xl border border-white/[0.06] bg-[#0b111a] p-5">
-                          <p className="text-sm font-bold text-zinc-300">
-                            {["completed", "success", "successful", "delivered"].includes(
-                              normalizeStatus(order.order_status)
-                            )
+                        <div className="mt-2 rounded-xl border border-white/[0.06] bg-[#0b111a] p-4 sm:mt-5 sm:p-5">
+                          <p className="text-xs font-bold text-zinc-300 sm:text-sm">
+                            {[
+                              "completed",
+                              "success",
+                              "successful",
+                              "delivered",
+                            ].includes(normalizeStatus(order.order_status))
                               ? "Your order is completed."
                               : "Delivery details are not available yet."}
                           </p>
-                          <p className="mt-2 text-xs leading-5 text-zinc-500">
-                            {["completed", "success", "successful", "delivered"].includes(
-                              normalizeStatus(order.order_status)
-                            )
+                          <p className="mt-2 text-[10px] leading-5 text-zinc-500 sm:text-xs">
+                            {[
+                              "completed",
+                              "success",
+                              "successful",
+                              "delivered",
+                            ].includes(normalizeStatus(order.order_status))
                               ? "There are no digital credentials attached to this order."
                               : "Your order details will appear here when they become available."}
                           </p>
@@ -872,15 +1035,25 @@ export default function OrderHistory() {
           )}
         </section>
 
-        {/* Footer */}
-        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-white/[0.06] pt-6 text-center sm:flex-row sm:text-left">
-          <p className="text-xs text-zinc-600">
+        {/* FOOTER */}
+        <footer className="mt-8 flex flex-col items-center justify-between gap-2 border-t border-white/[0.06] pt-5 text-center sm:mt-10 sm:flex-row sm:pt-6 sm:text-left">
+          <p className="text-[10px] text-zinc-600 sm:text-xs">
             © {new Date().getFullYear()} ProxySocials. All rights reserved.
           </p>
 
-          <p className="text-xs text-zinc-600">
+          <p className="text-[10px] text-zinc-600 sm:text-xs">
             Need help with an order? Contact our support team.
           </p>
+        </footer>
+
+        {/* MOBILE DASHBOARD LINK */}
+        <div className="mt-5 md:hidden">
+          <Link
+            href="/dashboard"
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-[#101722] py-3 text-xs font-bold text-zinc-300 transition hover:border-cyan-400/30 hover:text-cyan-300"
+          >
+            ← Back to Dashboard
+          </Link>
         </div>
       </div>
     </main>
